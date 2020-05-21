@@ -2,8 +2,9 @@
 
 // This sample shows how to get a value from a TextField via the [onSubmitted]
 // callback.
-
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
+import "package:traindown/traindown.dart";
 
 void main() => runApp(MyApp());
 
@@ -46,6 +47,15 @@ class _TraindownEditor extends State<TraindownEditor> {
     _controller.value = _controller.value.copyWith(
         text: _controller.text.replaceRange(start, start, addition),
         selection: TextSelection.collapsed(offset: end));
+  }
+
+  void _formatText() {
+    Formatter formatter = Formatter.for_string(_controller.text);
+    formatter.format();
+    String text = formatter.output.toString();
+
+    _controller.value = _controller.value.copyWith(
+        text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 
   Widget build(BuildContext context) {
@@ -102,6 +112,15 @@ class _TraindownEditor extends State<TraindownEditor> {
               ),
             ],
           ),
+          ButtonBar(
+              alignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                FlatButton(
+                  child: Text("Clean"),
+                  onPressed: () => _formatText(),
+                ),
+              ])
         ]));
   }
 }
