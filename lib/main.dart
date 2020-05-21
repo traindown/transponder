@@ -6,10 +6,10 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:traindown/traindown.dart";
 
-void main() => runApp(MyApp());
+void main() => runApp(Transponder());
 
 /// This Widget is the main application widget.
-class MyApp extends StatelessWidget {
+class Transponder extends StatelessWidget {
   static const String _title = "Traindown Transponder";
 
   @override
