@@ -31,6 +31,7 @@ dependencies:
   traindown: ^1.2.0
 
 dev_dependencies:
+  pedantic:
   flutter_test:
     sdk: flutter
 

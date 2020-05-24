@@ -1,14 +1,10 @@
-// Flutter code sample for TextField
-
-// This sample shows how to get a value from a TextField via the [onSubmitted]
-// callback.
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:traindown/traindown.dart";
 
 void main() => runApp(Transponder());
 
-/// This Widget is the main application widget.
 class Transponder extends StatelessWidget {
   static const String _title = "Traindown Transponder";
 
@@ -16,7 +12,99 @@ class Transponder extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: _title,
-      home: TraindownEditor(),
+      home: SessionScreen(),
+    );
+  }
+}
+
+class SessionScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(home: Scaffold(body: SessionList()));
+  }
+}
+
+class SessionList extends StatefulWidget {
+  SessionList({Key key}) : super(key: key);
+
+  @override
+  _SessionList createState() => _SessionList();
+}
+
+class _SessionList extends State<SessionList> {
+  final titles = ["May 23rd, 2020"];
+
+  Future<void> _showDeleteModal(int sessionIndex) async {
+    return showCupertinoDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text("Delete ${titles[sessionIndex]}?"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text("Deleting this session will permanently remove its data."),
+                Text("Are you sure you want to delete?"),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.red,
+              child: Text("Delete"),
+              onPressed: () {
+                setState(() => titles.removeAt(sessionIndex));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            child: TraindownEditor(),
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: titles.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return FlatButton(
+              textColor: Colors.blue,
+              child: Text("Add new session"),
+              onPressed: () {
+                setState(() => titles.insert(0, "Fuck"));
+                print(titles);
+                _showModal(context);
+              });
+        } else {
+          return Card(
+            child: ListTile(
+              leading: Icon(Icons.directions_run),
+              onLongPress: () => _showDeleteModal(index - 1),
+              onTap: () => _showModal(context),
+              title: Text(titles[index - 1]),
+            ),
+          );
+        }
+      },
     );
   }
 }
@@ -31,11 +119,13 @@ class TraindownEditor extends StatefulWidget {
 class _TraindownEditor extends State<TraindownEditor> {
   TextEditingController _controller;
 
+  @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
   }
 
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -58,6 +148,7 @@ class _TraindownEditor extends State<TraindownEditor> {
         text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: Column(
@@ -65,7 +156,7 @@ class _TraindownEditor extends State<TraindownEditor> {
             children: <Widget>[
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 40.0),
+              padding: EdgeInsets.all(10.0),
               child: EditableText(
                 autocorrect: false,
                 autofocus: true,
@@ -88,7 +179,10 @@ class _TraindownEditor extends State<TraindownEditor> {
           ),
           ButtonBar(
             alignment: MainAxisAlignment.center,
+            buttonHeight: 10.0,
+            buttonPadding: EdgeInsets.all(1.0),
             mainAxisSize: MainAxisSize.min,
+            overflowButtonSpacing: 10.0,
             children: <Widget>[
               FlatButton(
                 child: Text("Meta"),
@@ -110,17 +204,12 @@ class _TraindownEditor extends State<TraindownEditor> {
                 child: Text("Date"),
                 onPressed: () => _addText("@ "),
               ),
+              FlatButton(
+                child: Text("\u{1F9F9}"),
+                onPressed: () => _formatText(),
+              ),
             ],
           ),
-          ButtonBar(
-              alignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                FlatButton(
-                  child: Text("Clean"),
-                  onPressed: () => _formatText(),
-                ),
-              ])
         ]));
   }
 }
