@@ -1,70 +1,52 @@
-import "package:flutter/cupertino.dart";
-import "package:flutter/material.dart";
-import "package:flutter/services.dart";
-import "package:traindown/traindown.dart";
+import 'dart:io';
 
-void main() => runApp(Transponder());
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class Transponder extends StatelessWidget {
-  static const String _title = "Traindown Transponder";
+import 'package:loading/loading.dart';
+import 'package:loading/indicator/ball_pulse_indicator.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:traindown/traindown.dart';
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _title,
-      home: SessionScreen(),
-    );
-  }
-}
+void main() => runApp(MaterialApp(home: Scaffold(body: Transponder())));
 
-class SessionScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: Scaffold(body: SessionList()));
-  }
-}
+class _Transponder extends State<Transponder> {
+  int activeSessionIndex;
+  Directory _appData;
+  List<File> _sessions = [];
 
-class SessionList extends StatefulWidget {
-  SessionList({Key key}) : super(key: key);
-
-  @override
-  _SessionList createState() => _SessionList();
-}
-
-class _SessionList extends State<SessionList> {
-  final titles = ["May 23rd, 2020"];
-
-  Future<void> _showDeleteModal(int sessionIndex) async {
-    return showCupertinoDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text("Delete ${titles[sessionIndex]}?"),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text("Deleting this session will permanently remove its data."),
-                Text("Are you sure you want to delete?"),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              textColor: Colors.red,
-              child: Text("Delete"),
-              onPressed: () {
-                setState(() => titles.removeAt(sessionIndex));
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _initAppData() async {
+    final directory = await getApplicationDocumentsDirectory();
+    setState(() => _appData = directory);
   }
 
-  void _showModal(BuildContext context) {
+  Future<void> _createSession() async {
+    print('create');
+    File session = File(
+        '${_appData.path}/${DateTime.now().millisecondsSinceEpoch}.traindown');
+    setState(() {
+      _sessions.add(session);
+      activeSessionIndex = _sessions.length - 1;
+    });
+  }
+
+  Widget _createSessionButton() {
+    return FlatButton(
+        textColor: Colors.blue,
+        child: Text('Add new session'),
+        onPressed: () => _createSession());
+  }
+
+  void _deleteSession(String session) {}
+
+  Widget _loading() {
+    return Center(
+        child: Loading(
+            color: Colors.blue, indicator: BallPulseIndicator(), size: 100.0));
+  }
+
+  void _sessionEditor(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -80,32 +62,125 @@ class _SessionList extends State<SessionList> {
     );
   }
 
+  Widget _sessionList() {
+    return Expanded(
+        child: ListView.builder(
+            itemCount: _sessions.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  leading: Icon(Icons.directions_run),
+                  onLongPress: () => {}, //_showDeleteModal(index - 1),
+                  onTap: () => _sessionEditor(context),
+                  title: Text(_sessions[index].toString()),
+                ),
+              );
+            }));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget body;
+    if (_appData == null) {
+      _initAppData();
+      body = _loading();
+    } else if (activeSessionIndex == null) {
+      body = _sessionList();
+    } else {
+      body = Text('yay');
+    }
+
+    return Align(
+        alignment: Alignment.topLeft,
+        child: SafeArea(
+            left: true,
+            top: true,
+            right: true,
+            bottom: true,
+            minimum: const EdgeInsets.all(16.0),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[_createSessionButton(), _sessionList()])));
+  }
+}
+
+class Transponder extends StatefulWidget {
+  Transponder({Key key}) : super(key: key);
+
+  @override
+  _Transponder createState() => _Transponder();
+}
+
+class SessionList extends StatelessWidget {
+  final List<File> sessions;
+  final ValueChanged<String> deleteSession;
+
+  SessionList({Key key, @required this.sessions, @required this.deleteSession})
+      : super(key: key);
+
+/*
+  Future<void> _showDeleteModal(int sessionIndex) async {
+    return showCupertinoDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text('Delete ${sessions[sessionIndex]}?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Deleting this session will permanently remove its data.'),
+                Text('Are you sure you want to delete?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.red,
+              child: Text('Delete'),
+              onPressed: () {
+                setState(() => titles.removeAt(sessionIndex));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  
+  void _showModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            child: TraindownEditor(),
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    );
+  }
+*/
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: titles.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return FlatButton(
-              textColor: Colors.blue,
-              child: Text("Add new session"),
-              onPressed: () {
-                setState(() => titles.insert(0, "Fuck"));
-                print(titles);
-                _showModal(context);
-              });
-        } else {
+        itemCount: sessions.length,
+        itemBuilder: (context, index) {
           return Card(
             child: ListTile(
               leading: Icon(Icons.directions_run),
-              onLongPress: () => _showDeleteModal(index - 1),
-              onTap: () => _showModal(context),
-              title: Text(titles[index - 1]),
+              onLongPress: () => {}, //_showDeleteModal(index - 1),
+              onTap: () => {}, //_showModal(context),
+              title: Text(sessions[index].toString()),
             ),
           );
-        }
-      },
-    );
+        });
   }
 }
 
@@ -185,27 +260,27 @@ class _TraindownEditor extends State<TraindownEditor> {
             overflowButtonSpacing: 10.0,
             children: <Widget>[
               FlatButton(
-                child: Text("Meta"),
-                onPressed: () => _addText("\n# "),
+                child: Text('Meta'),
+                onPressed: () => _addText('\n# '),
               ),
               FlatButton(
-                child: Text("Colon"),
-                onPressed: () => _addText(": "),
+                child: Text('Colon'),
+                onPressed: () => _addText(': '),
               ),
               FlatButton(
-                child: Text("Note"),
-                onPressed: () => _addText("\n* "),
+                child: Text('Note'),
+                onPressed: () => _addText('\n* '),
               ),
               FlatButton(
-                child: Text("Superset"),
-                onPressed: () => _addText("\n+ "),
+                child: Text('Superset'),
+                onPressed: () => _addText('\n+ '),
               ),
               FlatButton(
-                child: Text("Date"),
-                onPressed: () => _addText("@ "),
+                child: Text('Date'),
+                onPressed: () => _addText('@ '),
               ),
               FlatButton(
-                child: Text("\u{1F9F9}"),
+                child: Text('\u{1F9F9}'),
                 onPressed: () => _formatText(),
               ),
             ],
