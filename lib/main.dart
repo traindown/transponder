@@ -4,30 +4,29 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:loading/loading.dart';
-import 'package:loading/indicator/ball_pulse_indicator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:traindown/traindown.dart';
 
 void main() => runApp(MaterialApp(home: Scaffold(body: Transponder())));
 
 class _Transponder extends State<Transponder> {
-  int activeSessionIndex;
+  int _activeSessionIndex;
   Directory _appData;
-  List<File> _sessions = [];
+  final List<File> _sessions = [];
 
   Future<void> _initAppData() async {
-    final directory = await getApplicationDocumentsDirectory();
+    Directory directory = await getApplicationDocumentsDirectory();
     setState(() => _appData = directory);
   }
 
+  String fullFilePath(String filename) =>
+      '${_appData.path}/$filename.traindown';
+
   Future<void> _createSession() async {
-    print('create');
-    File session = File(
-        '${_appData.path}/${DateTime.now().millisecondsSinceEpoch}.traindown');
+    File session = File(fullFilePath('untitled'));
     setState(() {
       _sessions.add(session);
-      activeSessionIndex = _sessions.length - 1;
+      _activeSessionIndex = _sessions.length - 1;
     });
   }
 
@@ -38,13 +37,72 @@ class _Transponder extends State<Transponder> {
         onPressed: () => _createSession());
   }
 
-  void _deleteSession(String session) {}
-
-  Widget _loading() {
-    return Center(
-        child: Loading(
-            color: Colors.blue, indicator: BallPulseIndicator(), size: 100.0));
+  Future<void> _showDeleteModal(int sessionIndex) async {
+    return showCupertinoDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text('Delete ${_sessions[sessionIndex].path}?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Deleting this session will permanently remove its data.'),
+                Text('Are you sure you want to delete?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.red,
+              child: Text('Delete'),
+              onPressed: () {
+                setState(() => _sessions.removeAt(sessionIndex));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
+
+  String get _activeSessionContent {
+    try {
+      return _sessions[_activeSessionIndex].readAsStringSync();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  File moveFile(File sourceFile, String newPath) {
+    try {
+      // prefer using rename as it is probably faster
+      return sourceFile.renameSync(newPath);
+    } on FileSystemException catch (_) {
+      // if rename fails, copy the source file and then delete it
+      final newFile = sourceFile.copySync(newPath);
+      sourceFile.deleteSync();
+      return newFile;
+    }
+  }
+
+  void _syncFilenameToContent() {
+    File session = _sessions[_activeSessionIndex];
+    String content = session.readAsStringSync();
+
+    String possibleFilename = content.split('\n').first.split('@').last.trim();
+
+    if (!session.path.split('/').last.startsWith(possibleFilename)) {
+      setState(() {
+        _sessions[_activeSessionIndex] =
+            moveFile(session, fullFilePath(possibleFilename));
+      });
+    }
+  }
+
+  void _writeSession(String content) =>
+      _sessions[_activeSessionIndex].writeAsString(content);
 
   void _sessionEditor(BuildContext context) {
     showModalBottomSheet<void>(
@@ -56,10 +114,11 @@ class _Transponder extends State<Transponder> {
       builder: (BuildContext context) {
         return Container(
             height: MediaQuery.of(context).size.height * 0.85,
-            child: TraindownEditor(),
+            child: TraindownEditor(
+                content: _activeSessionContent, onChange: _writeSession),
             padding: EdgeInsets.only(top: 20.0));
       },
-    );
+    ).whenComplete(() => _syncFilenameToContent());
   }
 
   Widget _sessionList() {
@@ -69,10 +128,13 @@ class _Transponder extends State<Transponder> {
             itemBuilder: (context, index) {
               return Card(
                 child: ListTile(
-                  leading: Icon(Icons.directions_run),
-                  onLongPress: () => {}, //_showDeleteModal(index - 1),
-                  onTap: () => _sessionEditor(context),
-                  title: Text(_sessions[index].toString()),
+                  leading: Icon(Icons.fitness_center),
+                  onLongPress: () => _showDeleteModal(index),
+                  onTap: () {
+                    _activeSessionIndex = index;
+                    _sessionEditor(context);
+                  },
+                  title: Text(_sessions[index].path.split('/').last),
                 ),
               );
             }));
@@ -80,15 +142,7 @@ class _Transponder extends State<Transponder> {
 
   @override
   Widget build(BuildContext context) {
-    Widget body;
-    if (_appData == null) {
-      _initAppData();
-      body = _loading();
-    } else if (activeSessionIndex == null) {
-      body = _sessionList();
-    } else {
-      body = Text('yay');
-    }
+    if (_appData == null) _initAppData();
 
     return Align(
         alignment: Alignment.topLeft,
@@ -112,80 +166,11 @@ class Transponder extends StatefulWidget {
   _Transponder createState() => _Transponder();
 }
 
-class SessionList extends StatelessWidget {
-  final List<File> sessions;
-  final ValueChanged<String> deleteSession;
-
-  SessionList({Key key, @required this.sessions, @required this.deleteSession})
-      : super(key: key);
-
-/*
-  Future<void> _showDeleteModal(int sessionIndex) async {
-    return showCupertinoDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Delete ${sessions[sessionIndex]}?'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Deleting this session will permanently remove its data.'),
-                Text('Are you sure you want to delete?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              textColor: Colors.red,
-              child: Text('Delete'),
-              onPressed: () {
-                setState(() => titles.removeAt(sessionIndex));
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  
-  void _showModal(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.85,
-            child: TraindownEditor(),
-            padding: EdgeInsets.only(top: 20.0));
-      },
-    );
-  }
-*/
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: sessions.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              leading: Icon(Icons.directions_run),
-              onLongPress: () => {}, //_showDeleteModal(index - 1),
-              onTap: () => {}, //_showModal(context),
-              title: Text(sessions[index].toString()),
-            ),
-          );
-        });
-  }
-}
-
 class TraindownEditor extends StatefulWidget {
-  TraindownEditor({Key key}) : super(key: key);
+  final String content;
+  final ValueChanged<String> onChange;
+
+  TraindownEditor({Key key, this.content, this.onChange}) : super(key: key);
 
   @override
   _TraindownEditor createState() => _TraindownEditor();
@@ -197,21 +182,24 @@ class _TraindownEditor extends State<TraindownEditor> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _controller = TextEditingController(text: widget.content);
   }
 
   @override
   void dispose() {
+    _formatText();
     _controller.dispose();
     super.dispose();
   }
 
   void _addText(String addition) {
+    addition = addition.isEmpty ? '' : addition;
     int start = _controller.selection.extentOffset;
     int end = _controller.selection.extentOffset + addition.length;
     _controller.value = _controller.value.copyWith(
         text: _controller.text.replaceRange(start, start, addition),
         selection: TextSelection.collapsed(offset: end));
+    widget.onChange(_controller.value.text);
   }
 
   void _formatText() {
@@ -221,6 +209,8 @@ class _TraindownEditor extends State<TraindownEditor> {
 
     _controller.value = _controller.value.copyWith(
         text: text, selection: TextSelection.collapsed(offset: text.length));
+
+    widget.onChange(_controller.value.text);
   }
 
   @override
@@ -242,6 +232,7 @@ class _TraindownEditor extends State<TraindownEditor> {
                 enableSuggestions: false,
                 expands: true,
                 focusNode: FocusNode(),
+                onChanged: (String text) => widget.onChange(text),
                 scrollPadding: EdgeInsets.all(20.0),
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
