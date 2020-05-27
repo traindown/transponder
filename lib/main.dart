@@ -27,6 +27,7 @@ class _Transponder extends State<Transponder> {
     setState(() {
       _sessions.add(session);
       _activeSessionIndex = _sessions.length - 1;
+      _sessionEditor();
     });
   }
 
@@ -77,10 +78,8 @@ class _Transponder extends State<Transponder> {
 
   File moveFile(File sourceFile, String newPath) {
     try {
-      // prefer using rename as it is probably faster
       return sourceFile.renameSync(newPath);
     } on FileSystemException catch (_) {
-      // if rename fails, copy the source file and then delete it
       final newFile = sourceFile.copySync(newPath);
       sourceFile.deleteSync();
       return newFile;
@@ -104,7 +103,7 @@ class _Transponder extends State<Transponder> {
   void _writeSession(String content) =>
       _sessions[_activeSessionIndex].writeAsString(content);
 
-  void _sessionEditor(BuildContext context) {
+  void _sessionEditor() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -132,7 +131,7 @@ class _Transponder extends State<Transponder> {
                   onLongPress: () => _showDeleteModal(index),
                   onTap: () {
                     _activeSessionIndex = index;
-                    _sessionEditor(context);
+                    _sessionEditor();
                   },
                   title: Text(_sessions[index].path.split('/').last),
                 ),
