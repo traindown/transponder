@@ -41,10 +41,10 @@ class _Transponder extends State<Transponder> {
   Future<void> _showDeleteModal(int sessionIndex) async {
     return showCupertinoDialog<void>(
       context: context,
-      barrierDismissible: true,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title: Text('Delete ${_sessions[sessionIndex].path}?'),
+          title:
+              Text('Delete ${_sessions[sessionIndex].path.split("/").last}?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -59,6 +59,12 @@ class _Transponder extends State<Transponder> {
               child: Text('Delete'),
               onPressed: () {
                 setState(() => _sessions.removeAt(sessionIndex));
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
@@ -245,9 +251,9 @@ class _TraindownEditor extends State<TraindownEditor> {
           ButtonBar(
             alignment: MainAxisAlignment.center,
             buttonHeight: 10.0,
+            buttonMinWidth: 10.0,
             buttonPadding: EdgeInsets.all(1.0),
-            mainAxisSize: MainAxisSize.min,
-            overflowButtonSpacing: 10.0,
+            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               FlatButton(
                 child: Text('Meta'),
