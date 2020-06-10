@@ -17,6 +17,10 @@ class _Transponder extends State<Transponder> {
   Future<void> _initAppData() async {
     Directory directory = await getApplicationDocumentsDirectory();
     setState(() => _appData = directory);
+    List<FileSystemEntity> files = directory.listSync();
+    if (files.isNotEmpty) {
+      files.forEach((file) => _sessions.add(file));
+    }
   }
 
   String fullFilePath(String filename) =>

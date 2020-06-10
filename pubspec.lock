@@ -218,7 +218,7 @@ packages:
       name: traindown
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.2"
   typed_data:
     dependency: transitive
     description:
