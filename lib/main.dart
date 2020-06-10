@@ -261,7 +261,7 @@ class _TraindownEditor extends State<TraindownEditor> {
             children: <Widget>[
               FlatButton(
                 child: Text('Meta'),
-                onPressed: () => _addText('\n# '),
+                onPressed: () => _addText('# '),
               ),
               FlatButton(
                 child: Text('Colon'),
@@ -269,11 +269,11 @@ class _TraindownEditor extends State<TraindownEditor> {
               ),
               FlatButton(
                 child: Text('Note'),
-                onPressed: () => _addText('\n* '),
+                onPressed: () => _addText('* '),
               ),
               FlatButton(
                 child: Text('Superset'),
-                onPressed: () => _addText('\n+ '),
+                onPressed: () => _addText('+ '),
               ),
               FlatButton(
                 child: Text('Date'),
