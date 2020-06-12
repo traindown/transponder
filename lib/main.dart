@@ -10,19 +10,27 @@ import 'package:traindown/traindown.dart';
 
 enum SessionMenuOption { delete, email }
 
+class Session {
+  File file;
+
+  Session(this.file);
+
+  String get name => file.path.split('/').last ?? 'Traindown Session';
+}
+
 void main() => runApp(MaterialApp(home: Scaffold(body: Transponder())));
 
 class _Transponder extends State<Transponder> {
-  int _activeSessionIndex;
+  Session _activeSession;
   Directory _appData;
-  final List<File> _sessions = [];
+  final List<Session> _sessions = [];
 
   Future<void> _initAppData() async {
     Directory directory = await getApplicationDocumentsDirectory();
     setState(() => _appData = directory);
     List<FileSystemEntity> files = directory.listSync();
     if (files.isNotEmpty) {
-      files.forEach((file) => _sessions.add(file));
+      files.forEach((file) => _sessions.add(Session(file)));
     }
   }
 
@@ -30,10 +38,10 @@ class _Transponder extends State<Transponder> {
       '${_appData.path}/$filename.traindown';
 
   Future<void> _createSession() async {
-    File session = File(fullFilePath('untitled'));
+    Session session = Session(File(fullFilePath('untitled')));
     setState(() {
       _sessions.add(session);
-      _activeSessionIndex = _sessions.length - 1;
+      _activeSession = session;
       _sessionEditor();
     });
   }
@@ -46,14 +54,14 @@ class _Transponder extends State<Transponder> {
   }
 
   Future<void> _sendEmail(int sessionIndex) async {
-    File session = _sessions[sessionIndex];
-    String body = session.readAsStringSync();
-    String subject = session.path.split('/').last ?? 'Traindown Session';
+    Session session = _sessions[sessionIndex];
+    String body = session.file.readAsStringSync();
+    String subject = session.name;
     final Email email = Email(
       body: body,
       subject: subject,
       recipients: ['tyler@greaterscott.com'],
-      attachmentPaths: [session.path],
+      attachmentPaths: [session.file.path],
     );
 
     String sendResponse;
@@ -87,8 +95,7 @@ class _Transponder extends State<Transponder> {
       context: context,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title:
-              Text('Delete ${_sessions[sessionIndex].path.split("/").last}?'),
+          title: Text('Delete ${_sessions[sessionIndex].name}?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -120,7 +127,7 @@ class _Transponder extends State<Transponder> {
 
   String get _activeSessionContent {
     try {
-      return _sessions[_activeSessionIndex].readAsStringSync();
+      return _activeSession.file.readAsStringSync();
     } catch (e) {
       return '';
     }
@@ -137,21 +144,19 @@ class _Transponder extends State<Transponder> {
   }
 
   void _syncFilenameToContent() {
-    File session = _sessions[_activeSessionIndex];
-    String content = session.readAsStringSync();
-
+    String content = _activeSession.file.readAsStringSync();
     String possibleFilename = content.split('\n').first.split('@').last.trim();
 
-    if (!session.path.split('/').last.startsWith(possibleFilename)) {
+    if (!_activeSession.name.startsWith(possibleFilename)) {
       setState(() {
-        _sessions[_activeSessionIndex] =
-            moveFile(session, fullFilePath(possibleFilename));
+        _activeSession.file =
+            moveFile(_activeSession.file, fullFilePath(possibleFilename));
       });
     }
   }
 
   void _writeSession(String content) =>
-      _sessions[_activeSessionIndex].writeAsString(content);
+      _activeSession.file.writeAsString(content);
 
   void _sessionEditor() {
     showModalBottomSheet<void>(
@@ -171,6 +176,9 @@ class _Transponder extends State<Transponder> {
   }
 
   Widget _sessionList() {
+    // TODO: Consider only running this on dirty
+    _sessions.sort((a, b) => b.name.compareTo(a.name));
+
     return Expanded(
         child: ListView.builder(
             itemCount: _sessions.length,
@@ -178,10 +186,10 @@ class _Transponder extends State<Transponder> {
               return Card(
                 child: ListTile(
                   onTap: () {
-                    _activeSessionIndex = index;
+                    _activeSession = _sessions[index];
                     _sessionEditor();
                   },
-                  title: Text(_sessions[index].path.split('/').last),
+                  title: Text(_sessions[index].name),
                   trailing: PopupMenuButton<SessionMenuOption>(
                       elevation: 2.0,
                       shape: RoundedRectangleBorder(
