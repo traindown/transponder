@@ -13,9 +13,61 @@ enum SessionMenuOption { delete, email }
 class Session {
   File file;
 
-  Session(this.file);
+  Session(this.file) {
+    DateTime date = DateTime.now();
+    String month = date.month.toString().padLeft(2, '0');
+    String day = date.day.toString().padLeft(2, '0');
+    String dateString = '${date.year}-$month-$day';
+    file.writeAsString('@ $dateString\n# unit: lbs\n\n');
+  }
 
-  String get name => file.path.split('/').last ?? 'Traindown Session';
+  final String defaultSessionName = 'Traindown Session';
+
+  bool teardown() {
+    try {
+      file.deleteSync();
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
+  String get filename => file.path.split('/').last ?? defaultSessionName;
+
+  String get name {
+    String dateString = filename.split('.').first;
+    if (dateString == null) return defaultSessionName;
+
+    DateTime date = DateTime.tryParse(dateString);
+    if (date == null) return defaultSessionName;
+
+    String dow = 'Unknown day';
+    switch (date.weekday) {
+      case 1:
+        dow = 'Sunday';
+        break;
+      case 2:
+        dow = 'Monday';
+        break;
+      case 3:
+        dow = 'Tuesday';
+        break;
+      case 4:
+        dow = 'Wednesday';
+        break;
+      case 5:
+        dow = 'Thursday';
+        break;
+      case 6:
+        dow = 'Friday';
+        break;
+      case 7:
+        dow = 'Saturday';
+        break;
+    }
+
+    return '${dow} ${date.month}/${date.day}/${date.year}';
+  }
 }
 
 void main() => runApp(MaterialApp(home: Scaffold(body: Transponder())));
@@ -90,6 +142,29 @@ class _Transponder extends State<Transponder> {
         });
   }
 
+  Future<void> _showErrorModal(String message) async {
+    return showCupertinoDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+              title: Text('An error occurred'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text('The following error occurred:\n'),
+                    Text(message)
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                    textColor: Colors.blue,
+                    child: Text('Huh. Okay'),
+                    onPressed: () => Navigator.of(context).pop())
+              ]);
+        });
+  }
+
   Future<void> _showDeleteModal(int sessionIndex) async {
     return showCupertinoDialog<void>(
       context: context,
@@ -109,8 +184,13 @@ class _Transponder extends State<Transponder> {
               textColor: Colors.red,
               child: Text('Delete'),
               onPressed: () {
-                setState(() => _sessions.removeAt(sessionIndex));
-                Navigator.of(context).pop();
+                if (_sessions[sessionIndex].teardown()) {
+                  setState(() => _sessions.removeAt(sessionIndex));
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pop();
+                  _showErrorModal('Could not delete session');
+                }
               },
             ),
             FlatButton(
@@ -177,7 +257,7 @@ class _Transponder extends State<Transponder> {
 
   Widget _sessionList() {
     // TODO: Consider only running this on dirty
-    _sessions.sort((a, b) => b.name.compareTo(a.name));
+    _sessions.sort((a, b) => b.filename.compareTo(a.filename));
 
     return Expanded(
         child: ListView.builder(
