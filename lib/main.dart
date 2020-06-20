@@ -8,7 +8,7 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:traindown/traindown.dart';
 
-enum SessionMenuOption { delete, email }
+enum SessionMenuOption { copy, delete, email }
 
 abstract class Utils {
   static String get dateString {
@@ -22,8 +22,10 @@ abstract class Utils {
 class Session {
   File file;
 
-  Session(this.file) {
-    file.writeAsString('@ ${Utils.dateString}\n# unit: lbs\n\n');
+  Session(this.file, {bool copy = false}) {
+    if (!copy) {
+      file.writeAsString('@ ${Utils.dateString}\n# unit: lbs\n\n');
+    }
   }
 
   final String defaultSessionName = 'Traindown Session';
@@ -104,6 +106,15 @@ class _Transponder extends State<Transponder> {
       _activeSession = session;
       _sessionEditor();
     });
+  }
+
+  Future<void> _copySession(int sessionIndex) async {
+    String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
+    File tmpFile = File(fullFilePath(tmpFilename));
+    String content = _sessions[sessionIndex].file.readAsStringSync();
+    tmpFile.writeAsStringSync(content);
+    Session session = Session(tmpFile, copy: true);
+    setState(() => _sessions.add(session));
   }
 
   Widget _createSessionButton() {
@@ -298,6 +309,9 @@ class _Transponder extends State<Transponder> {
                           case SessionMenuOption.delete:
                             _showDeleteModal(index);
                             break;
+                          case SessionMenuOption.copy:
+                            _copySession(index);
+                            break;
                           case SessionMenuOption.email:
                             _sendEmail(index);
                             break;
@@ -305,6 +319,10 @@ class _Transponder extends State<Transponder> {
                       },
                       itemBuilder: (BuildContext context) =>
                           <PopupMenuEntry<SessionMenuOption>>[
+                            const PopupMenuItem<SessionMenuOption>(
+                              value: SessionMenuOption.copy,
+                              child: Text('Create copy'),
+                            ),
                             const PopupMenuItem<SessionMenuOption>(
                               value: SessionMenuOption.email,
                               child: Text('Send via email'),
@@ -406,7 +424,7 @@ class _TraindownEditor extends State<TraindownEditor> {
                 autofocus: true,
                 backgroundCursorColor: Colors.blue,
                 cursorColor: Colors.red,
-                cursorWidth: 5,
+                cursorWidth: 2,
                 controller: _controller,
                 enableSuggestions: false,
                 expands: true,
