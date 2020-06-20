@@ -10,15 +10,20 @@ import 'package:traindown/traindown.dart';
 
 enum SessionMenuOption { delete, email }
 
+abstract class Utils {
+  static String get dateString {
+    DateTime date = DateTime.now();
+    String month = date.month.toString().padLeft(2, '0');
+    String day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+}
+
 class Session {
   File file;
 
   Session(this.file) {
-    DateTime date = DateTime.now();
-    String month = date.month.toString().padLeft(2, '0');
-    String day = date.day.toString().padLeft(2, '0');
-    String dateString = '${date.year}-$month-$day';
-    file.writeAsString('@ $dateString\n# unit: lbs\n\n');
+    file.writeAsString('@ ${Utils.dateString}\n# unit: lbs\n\n');
   }
 
   final String defaultSessionName = 'Traindown Session';
@@ -32,9 +37,11 @@ class Session {
     return true;
   }
 
-  String get filename => file.path.split('/').last ?? defaultSessionName;
+  String get filename => file.path.split('/').last;
 
   String get name {
+    if (filename == null) return defaultSessionName;
+
     String dateString = filename.split('.').first;
     if (dateString == null) return defaultSessionName;
 
@@ -90,7 +97,8 @@ class _Transponder extends State<Transponder> {
       '${_appData.path}/$filename.traindown';
 
   Future<void> _createSession() async {
-    Session session = Session(File(fullFilePath('untitled')));
+    String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
+    Session session = Session(File(fullFilePath(tmpFilename)));
     setState(() {
       _sessions.add(session);
       _activeSession = session;
@@ -227,7 +235,16 @@ class _Transponder extends State<Transponder> {
     String content = _activeSession.file.readAsStringSync();
     String possibleFilename = content.split('\n').first.split('@').last.trim();
 
-    if (!_activeSession.name.startsWith(possibleFilename)) {
+    if (!_activeSession.filename.startsWith(possibleFilename)) {
+      int existingSessionsCount = _sessions.fold(0, (count, session) {
+        if (session.filename == '$possibleFilename.traindown') count++;
+        return count;
+      });
+
+      if (existingSessionsCount > 0) {
+        possibleFilename += '.$existingSessionsCount';
+      }
+
       setState(() {
         _activeSession.file =
             moveFile(_activeSession.file, fullFilePath(possibleFilename));
