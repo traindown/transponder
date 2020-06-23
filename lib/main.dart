@@ -52,25 +52,25 @@ class Session {
 
     String dow = 'Unknown day';
     switch (date.weekday) {
-      case 1:
+      case DateTime.sunday:
         dow = 'Sunday';
         break;
-      case 2:
+      case DateTime.monday:
         dow = 'Monday';
         break;
-      case 3:
+      case DateTime.tuesday:
         dow = 'Tuesday';
         break;
-      case 4:
+      case DateTime.wednesday:
         dow = 'Wednesday';
         break;
-      case 5:
+      case DateTime.thursday:
         dow = 'Thursday';
         break;
-      case 6:
+      case DateTime.friday:
         dow = 'Friday';
         break;
-      case 7:
+      case DateTime.saturday:
         dow = 'Saturday';
         break;
     }
