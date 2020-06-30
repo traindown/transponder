@@ -193,6 +193,9 @@ class _Transponder extends State<Transponder> {
         _sessions.sort((a, b) => b.filename.compareTo(a.filename));
       });
     }
+
+    // NOTE: This just kicks the getters for _activeSession
+    setState(() => _activeSession = _activeSession);
   }
 
   void _writeSession(String content) =>

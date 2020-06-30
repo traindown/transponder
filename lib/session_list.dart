@@ -31,6 +31,7 @@ class SessionList extends StatelessWidget {
                 child: ListTile(
                   onTap: () => onSelection(index),
                   title: Text(sessions[index].name),
+                  subtitle: Text(sessions[index].liftsSentence),
                   trailing: PopupMenuButton<SessionMenuOption>(
                       elevation: 2.0,
                       shape: RoundedRectangleBorder(

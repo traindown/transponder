@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:traindown/traindown.dart';
+
 class Session {
   File file;
 
@@ -28,6 +30,31 @@ class Session {
   }
 
   String get filename => file.path.split('/').last;
+
+  List<String> get lifts {
+    Parser parser = Parser.for_file(file.path);
+    try {
+      parser.call();
+    } catch (_) {
+      return ['No lifts yet'];
+    }
+
+    if (parser.movements.isEmpty) return ['No lifts yet'];
+
+    return parser.movements.map((m) => m.name).toList();
+  }
+
+  String get liftsSentence {
+    if (lifts.length == 1) return lifts.first;
+    if (lifts.length == 2) {
+      return '${lifts.first} and ${lifts.last}';
+    }
+    if (lifts.length == 3) {
+      return '${lifts.sublist(0, lifts.length - 1).join(", ")}, and ${lifts.last}';
+    }
+
+    return '${lifts.sublist(0, 3).join(", ")}, and ${lifts.length - 3} others';
+  }
 
   String get name {
     if (filename == null) return defaultSessionName;
