@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'session.dart';
 import 'session_list.dart';
 import 'traindown_editor.dart';
+import 'traindown_viewer.dart';
 
 void main() => runApp(MaterialApp(home: Scaffold(body: Transponder())));
 
@@ -218,6 +219,22 @@ class _Transponder extends State<Transponder> {
     ).whenComplete(() => _syncFilenameToContent());
   }
 
+  void _sessionViewer() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: TraindownViewer(content: _activeSessionContent),
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_appData == null) _initAppData();
@@ -236,15 +253,18 @@ class _Transponder extends State<Transponder> {
                 children: <Widget>[
                   _createSessionButton(),
                   SessionList(
-                    sessions: _sessions,
-                    onCopy: (index) => _copySession(index),
-                    onDelete: (index) => _showDeleteModal(index),
-                    onEmail: (index) => _sendEmail(index),
-                    onSelection: (index) {
-                      _activeSession = _sessions[index];
-                      _sessionEditor();
-                    },
-                  )
+                      sessions: _sessions,
+                      onCopy: (index) => _copySession(index),
+                      onDelete: (index) => _showDeleteModal(index),
+                      onEmail: (index) => _sendEmail(index),
+                      onEdit: (index) {
+                        _activeSession = _sessions[index];
+                        _sessionEditor();
+                      },
+                      onView: (index) {
+                        _activeSession = _sessions[index];
+                        _sessionViewer();
+                      })
                 ])));
   }
 }

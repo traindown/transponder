@@ -10,7 +10,8 @@ class SessionList extends StatelessWidget {
   final ValueChanged<int> onCopy;
   final ValueChanged<int> onDelete;
   final ValueChanged<int> onEmail;
-  final ValueChanged<int> onSelection;
+  final ValueChanged<int> onEdit;
+  final ValueChanged<int> onView;
 
   SessionList(
       {Key key,
@@ -18,7 +19,8 @@ class SessionList extends StatelessWidget {
       this.onCopy,
       this.onDelete,
       this.onEmail,
-      this.onSelection})
+      this.onEdit,
+      this.onView})
       : super(key: key);
 
   @override
@@ -29,7 +31,12 @@ class SessionList extends StatelessWidget {
             itemBuilder: (context, index) {
               return Card(
                 child: ListTile(
-                  onTap: () => onSelection(index),
+                  onTap: () => onView(index),
+                  leading: IconButton(
+                    icon: Icon(Icons.edit),
+                    color: Colors.blue,
+                    onPressed: () => onEdit(index),
+                  ),
                   title: Text(sessions[index].name),
                   subtitle: Text(sessions[index].liftsSentence),
                   trailing: PopupMenuButton<SessionMenuOption>(
