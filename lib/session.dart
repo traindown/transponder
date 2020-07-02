@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:intl/intl.dart';
 
 import 'package:traindown/traindown.dart';
 
@@ -22,6 +23,7 @@ class Session {
     return true;
   }
 
+  // TODO: Intl
   String get defaultDateString {
     DateTime date = DateTime.now();
     String month = date.month.toString().padLeft(2, '0');
@@ -65,31 +67,6 @@ class Session {
     DateTime date = DateTime.tryParse(dateString);
     if (date == null) return defaultSessionName;
 
-    String dow = 'Unknown day';
-    switch (date.weekday) {
-      case DateTime.sunday:
-        dow = 'Sunday';
-        break;
-      case DateTime.monday:
-        dow = 'Monday';
-        break;
-      case DateTime.tuesday:
-        dow = 'Tuesday';
-        break;
-      case DateTime.wednesday:
-        dow = 'Wednesday';
-        break;
-      case DateTime.thursday:
-        dow = 'Thursday';
-        break;
-      case DateTime.friday:
-        dow = 'Friday';
-        break;
-      case DateTime.saturday:
-        dow = 'Saturday';
-        break;
-    }
-
-    return '${dow} ${date.month}/${date.day}/${date.year}';
+    return DateFormat('yMMMMEEEEd').format(date);
   }
 }

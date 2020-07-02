@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:traindown/traindown.dart';
 
@@ -10,7 +11,9 @@ class TraindownViewer extends StatelessWidget {
   TraindownViewer({Key key, this.content}) : super(key: key) {
     parser = Parser.for_string(content);
     // TODO: Guard this
-    parser.parse();
+    try {
+      parser.parse();
+    } catch (_) {}
   }
 
   List<Movement> get movements => parser.movements;
@@ -38,12 +41,17 @@ class TraindownViewer extends StatelessWidget {
         ]);
   }
 
+  String get occurred => DateFormat.yMMMMEEEEd('en_US').format(parser.occurred);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+          Text(occurred,
+              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center),
           Expanded(
               child: ListView.builder(
                   itemCount: movements.length,
