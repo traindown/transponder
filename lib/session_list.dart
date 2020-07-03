@@ -23,8 +23,7 @@ class SessionList extends StatelessWidget {
       this.onView})
       : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
+  Widget renderList(BuildContext context) {
     return Expanded(
         child: ListView.builder(
             itemCount: sessions.length,
@@ -68,13 +67,43 @@ class SessionList extends StatelessWidget {
                               value: SessionMenuOption.email,
                               child: Text('Send via email'),
                             ),
+                            const PopupMenuDivider(),
                             const PopupMenuItem<SessionMenuOption>(
                               value: SessionMenuOption.delete,
-                              child: Text('Delete session'),
+                              child: Text('Delete session',
+                                  style: TextStyle(color: Colors.red)),
                             ),
                           ]),
                 ),
               );
             }));
+  }
+
+  Widget renderSplash(BuildContext context) {
+    return Expanded(
+        child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                      padding: EdgeInsets.only(bottom: 5.0),
+                      child: Text('No Sessions yet',
+                          style: TextStyle(fontSize: 20.0))),
+                  Text(
+                      'To get started, just tap the \'Add new session\' button at the top of the screen.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey)),
+                ])));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (sessions.isEmpty) {
+      return renderSplash(context);
+    } else {
+      return renderList(context);
+    }
   }
 }

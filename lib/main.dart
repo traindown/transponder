@@ -126,14 +126,22 @@ class _Transponder extends State<Transponder> {
             child: ListBody(
               children: <Widget>[
                 Text('Deleting this session will permanently remove its data.'),
-                Text('Are you sure you want to delete?'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
+              textColor: Colors.blue,
+              child: Text('Cancel', style: TextStyle(fontSize: 16.0)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
               textColor: Colors.red,
-              child: Text('Delete'),
+              child: Text('Delete',
+                  style:
+                      TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
               onPressed: () {
                 if (_sessions[sessionIndex].teardown()) {
                   setState(() => _sessions.removeAt(sessionIndex));
@@ -142,12 +150,6 @@ class _Transponder extends State<Transponder> {
                   Navigator.of(context).pop();
                   _showErrorModal('Could not delete session');
                 }
-              },
-            ),
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
               },
             ),
           ],
