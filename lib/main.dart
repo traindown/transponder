@@ -23,7 +23,7 @@ class _Transponder extends State<Transponder> {
     setState(() => _appData = directory);
     List<FileSystemEntity> files = directory.listSync();
     if (files.isNotEmpty) {
-      files.forEach((file) => _sessions.add(Session(file)));
+      files.forEach((file) => _sessions.add(Session(file, empty: false)));
     }
   }
 
@@ -45,7 +45,7 @@ class _Transponder extends State<Transponder> {
     File tmpFile = File(fullFilePath(tmpFilename));
     String content = _sessions[sessionIndex].file.readAsStringSync();
     tmpFile.writeAsStringSync(content);
-    Session session = Session(tmpFile, copy: true);
+    Session session = Session(tmpFile, empty: false);
     setState(() => _sessions.add(session));
   }
 

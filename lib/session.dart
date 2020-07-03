@@ -6,8 +6,8 @@ import 'package:traindown/traindown.dart';
 class Session {
   File file;
 
-  Session(this.file, {bool copy = false}) {
-    if (!copy) {
+  Session(this.file, {bool empty = true}) {
+    if (empty) {
       file.writeAsString('@ $defaultDateString\n# unit: lbs\n\n');
     }
   }
