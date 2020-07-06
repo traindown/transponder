@@ -16,11 +16,40 @@ class TraindownViewer extends StatelessWidget {
 
   List<Movement> get movements => parser.movements;
 
+  Widget renderKvps(Map<String, String> kvps) {
+    if (kvps.isEmpty) return null;
+
+    return Container(
+        color: Colors.grey[100],
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
+        child: ListView.builder(
+            primary: false,
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
+            itemCount: kvps.keys.length,
+            itemBuilder: (BuildContext context, int keyIndex) {
+              return Row(children: [
+                Padding(
+                    padding: EdgeInsets.only(left: 5.0),
+                    child: Text.rich(TextSpan(
+                      text: '${kvps.keys.elementAt(keyIndex)}: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      children: <TextSpan>[
+                        TextSpan(
+                            text: kvps[kvps.keys.elementAt(keyIndex)],
+                            style: TextStyle(fontWeight: FontWeight.normal)),
+                      ],
+                    )))
+              ]);
+            }));
+  }
+
   Widget renderNotes(List<String> notes) {
     if (notes.isEmpty) return null;
 
-    return Padding(
-        padding: EdgeInsets.only(bottom: 10.0),
+    return Container(
+        color: Colors.grey[100],
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
         child: ListView.builder(
             primary: false,
             shrinkWrap: true,
@@ -28,12 +57,52 @@ class TraindownViewer extends StatelessWidget {
             itemCount: notes.length,
             itemBuilder: (BuildContext context, int index) {
               return Row(children: [
-                Icon(Icons.stars, size: 10.0),
+                Icon(Icons.lens, size: 6.0),
                 Padding(
                     padding: EdgeInsets.only(left: 5.0),
                     child: Text(notes[index]))
               ]);
             }));
+  }
+
+  Widget renderPerformances(List<Performance> performances) {
+    List<Widget> rows = [
+      Row(children: [
+        Expanded(child: Text('LOAD', style: TextStyle(color: Colors.grey))),
+        Expanded(child: Text('REPS', style: TextStyle(color: Colors.grey))),
+        Expanded(child: Text('SETS', style: TextStyle(color: Colors.grey))),
+      ])
+    ];
+    performances.forEach((p) {
+      rows.add(Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        Expanded(
+            child: Text.rich(TextSpan(
+          text: p.load.toString(),
+          style: TextStyle(fontSize: 16.0),
+          children: <TextSpan>[
+            TextSpan(text: p.unit, style: TextStyle(color: Colors.grey)),
+          ],
+        ))),
+        Expanded(
+            child: Text.rich(TextSpan(
+          text: p.reps.toString(),
+          style: TextStyle(fontSize: 16.0),
+          children: p.fails > 0
+              ? <TextSpan>[
+                  TextSpan(
+                      text: '(${p.fails})', style: TextStyle(color: Colors.red))
+                ]
+              : [],
+        ))),
+        Expanded(
+            child: Text(p.repeat.toString(), style: TextStyle(fontSize: 16.0)))
+      ]));
+
+      if (p.metadata.notes.isNotEmpty) {
+        rows.add(renderNotes(p.metadata.notes));
+      }
+    });
+    return Column(children: rows);
   }
 
   Widget renderMovement(Movement movement) {
@@ -57,53 +126,13 @@ class TraindownViewer extends StatelessWidget {
                         ]
                       : [],
                 )),
-                Text(movement.volume.toString())
+                Text(movement.volume.toString(),
+                    style: TextStyle(fontSize: 18.0))
               ]),
               Divider(color: Colors.grey),
               renderNotes(movement.metadata.notes),
-              Table(
-                  children: [
-                        TableRow(children: [
-                          TableCell(
-                              child: Text('LOAD',
-                                  style: TextStyle(color: Colors.grey))),
-                          TableCell(
-                              child: Text('REPS',
-                                  style: TextStyle(color: Colors.grey))),
-                          TableCell(
-                              child: Text('SETS',
-                                  style: TextStyle(color: Colors.grey))),
-                        ])
-                      ] +
-                      movement.performances.map((p) {
-                        return TableRow(children: [
-                          TableCell(
-                              child: Text.rich(TextSpan(
-                            text: p.load.toString(),
-                            style: TextStyle(fontSize: 16.0),
-                            children: <TextSpan>[
-                              TextSpan(
-                                  text: p.unit,
-                                  style: TextStyle(color: Colors.grey)),
-                            ],
-                          ))),
-                          TableCell(
-                              child: Text.rich(TextSpan(
-                            text: p.reps.toString(),
-                            style: TextStyle(fontSize: 16.0),
-                            children: p.fails > 0
-                                ? <TextSpan>[
-                                    TextSpan(
-                                        text: '(${p.fails})',
-                                        style: TextStyle(color: Colors.red))
-                                  ]
-                                : [],
-                          ))),
-                          TableCell(
-                              child: Text(p.repeat.toString(),
-                                  style: TextStyle(fontSize: 16.0))),
-                        ]);
-                      }).toList())
+              renderKvps(movement.metadata.kvps),
+              renderPerformances(movement.performances),
             ].where((Object o) => o != null).toList()));
   }
 
@@ -115,14 +144,16 @@ class TraindownViewer extends StatelessWidget {
         body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-          Text(occurred,
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center),
+          Container(
+              margin: EdgeInsets.only(bottom: 10.0),
+              child: Text(occurred,
+                  style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center)),
           Expanded(
-              child: ListView.builder(
-                  itemCount: movements.length,
-                  itemBuilder: (context, index) =>
-                      renderMovement(movements[index])))
+              child: ListView(
+                  children: [renderNotes(parser.metadata.notes)] +
+                      [renderKvps(parser.metadata.kvps)] +
+                      movements.map((m) => renderMovement(m)).toList()))
         ]));
   }
 }
