@@ -151,9 +151,11 @@ class TraindownViewer extends StatelessWidget {
                   textAlign: TextAlign.center)),
           Expanded(
               child: ListView(
-                  children: [renderNotes(parser.metadata.notes)] +
-                      [renderKvps(parser.metadata.kvps)] +
-                      movements.map((m) => renderMovement(m)).toList()))
+                  children: ([renderNotes(parser.metadata.notes)] +
+                          [renderKvps(parser.metadata.kvps)] +
+                          movements.map((m) => renderMovement(m)).toList())
+                      .where((Object o) => o != null)
+                      .toList()))
         ]));
   }
 }

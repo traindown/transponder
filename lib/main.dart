@@ -18,26 +18,12 @@ class _Transponder extends State<Transponder> {
   Directory _appData;
   final List<Session> _sessions = [];
 
-  Future<void> _initAppData() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    setState(() => _appData = directory);
-    List<FileSystemEntity> files = directory.listSync();
-    if (files.isNotEmpty) {
-      files.forEach((file) => _sessions.add(Session(file, empty: false)));
+  String get _activeSessionContent {
+    try {
+      return _activeSession.file.readAsStringSync();
+    } catch (e) {
+      return '';
     }
-  }
-
-  String fullFilePath(String filename) =>
-      '${_appData.path}/$filename.traindown';
-
-  Future<void> _createSession() async {
-    String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
-    Session session = Session(File(fullFilePath(tmpFilename)));
-    setState(() {
-      _sessions.add(session);
-      _activeSession = session;
-      _sessionEditor();
-    });
   }
 
   Future<void> _copySession(int sessionIndex) async {
@@ -49,11 +35,59 @@ class _Transponder extends State<Transponder> {
     setState(() => _sessions.add(session));
   }
 
-  Widget _createSessionButton() {
+  Future<void> _createSession() async {
+    String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
+    Session session = Session(File(fullFilePath(tmpFilename)));
+    setState(() {
+      _sessions.add(session);
+      _activeSession = session;
+      _showSessionEditor();
+    });
+  }
+
+  String fullFilePath(String filename) =>
+      '${_appData.path}/$filename.traindown';
+
+  Future<void> _initAppData() async {
+    Directory directory = await getApplicationDocumentsDirectory();
+    setState(() => _appData = directory);
+    List<FileSystemEntity> files = directory.listSync();
+    if (files.isNotEmpty) {
+      files.forEach((file) => _sessions.add(Session(file, empty: false)));
+    }
+  }
+
+  File moveFile(File sourceFile, String newPath) {
+    try {
+      return sourceFile.renameSync(newPath);
+    } on FileSystemException catch (_) {
+      final newFile = sourceFile.copySync(newPath);
+      sourceFile.deleteSync();
+      return newFile;
+    }
+  }
+
+  Widget _renderCreateSessionButton() {
     return FlatButton(
         textColor: Colors.blue,
         child: Text('Add new session'),
         onPressed: () => _createSession());
+  }
+
+  Widget _renderSessionList() {
+    return SessionList(
+        sessions: _sessions,
+        onCopy: (index) => _copySession(index),
+        onDelete: (index) => _showDeleteModal(index),
+        onEmail: (index) => _sendEmail(index),
+        onEdit: (index) {
+          _activeSession = _sessions[index];
+          _showSessionEditor();
+        },
+        onView: (index) {
+          _activeSession = _sessions[index];
+          _showSessionViewer();
+        });
   }
 
   Future<void> _sendEmail(int sessionIndex) async {
@@ -90,29 +124,6 @@ class _Transponder extends State<Transponder> {
               ),
             ],
           );
-        });
-  }
-
-  Future<void> _showErrorModal(String message) async {
-    return showCupertinoDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return CupertinoAlertDialog(
-              title: Text('An error occurred'),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: <Widget>[
-                    Text('The following error occurred:\n'),
-                    Text(message)
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                FlatButton(
-                    textColor: Colors.blue,
-                    child: Text('Huh. Okay'),
-                    onPressed: () => Navigator.of(context).pop())
-              ]);
         });
   }
 
@@ -158,23 +169,64 @@ class _Transponder extends State<Transponder> {
     );
   }
 
-  String get _activeSessionContent {
-    try {
-      return _activeSession.file.readAsStringSync();
-    } catch (e) {
-      return '';
-    }
+  Future<void> _showErrorModal(String message) async {
+    return showCupertinoDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+              title: Text('An error occurred'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text('The following error occurred:\n'),
+                    Text(message)
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                    textColor: Colors.blue,
+                    child: Text('Huh. Okay'),
+                    onPressed: () => Navigator.of(context).pop())
+              ]);
+        });
   }
 
-  File moveFile(File sourceFile, String newPath) {
-    try {
-      return sourceFile.renameSync(newPath);
-    } on FileSystemException catch (_) {
-      final newFile = sourceFile.copySync(newPath);
-      sourceFile.deleteSync();
-      return newFile;
-    }
+  void _showSessionEditor() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: TraindownEditor(
+                content: _activeSessionContent, onChange: _writeSession),
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    ).whenComplete(() => _syncFilenameToContent());
   }
+
+  void _showSessionViewer() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: TraindownViewer(content: _activeSessionContent),
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    );
+  }
+
+  void _writeSession(String content) =>
+      _activeSession.file.writeAsString(content);
 
   void _syncFilenameToContent() {
     String content = _activeSession.file.readAsStringSync();
@@ -201,42 +253,6 @@ class _Transponder extends State<Transponder> {
     setState(() => _activeSession = _activeSession);
   }
 
-  void _writeSession(String content) =>
-      _activeSession.file.writeAsString(content);
-
-  void _sessionEditor() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: TraindownEditor(
-                content: _activeSessionContent, onChange: _writeSession),
-            padding: EdgeInsets.only(top: 20.0));
-      },
-    ).whenComplete(() => _syncFilenameToContent());
-  }
-
-  void _sessionViewer() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: TraindownViewer(content: _activeSessionContent),
-            padding: EdgeInsets.only(top: 20.0));
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_appData == null) _initAppData();
@@ -253,20 +269,8 @@ class _Transponder extends State<Transponder> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  _createSessionButton(),
-                  SessionList(
-                      sessions: _sessions,
-                      onCopy: (index) => _copySession(index),
-                      onDelete: (index) => _showDeleteModal(index),
-                      onEmail: (index) => _sendEmail(index),
-                      onEdit: (index) {
-                        _activeSession = _sessions[index];
-                        _sessionEditor();
-                      },
-                      onView: (index) {
-                        _activeSession = _sessions[index];
-                        _sessionViewer();
-                      })
+                  _renderCreateSessionButton(),
+                  _renderSessionList()
                 ])));
   }
 }

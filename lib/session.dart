@@ -67,6 +67,6 @@ class Session {
     DateTime date = DateTime.tryParse(dateString);
     if (date == null) return defaultSessionName;
 
-    return DateFormat('yMMMMEEEEd').format(date);
+    return DateFormat('E, LLLL d, y').format(date);
   }
 }
