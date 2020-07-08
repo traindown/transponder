@@ -91,10 +91,22 @@ class SessionList extends StatelessWidget {
                       padding: EdgeInsets.only(bottom: 5.0),
                       child: Text('No Sessions yet',
                           style: TextStyle(fontSize: 20.0))),
-                  Text(
-                      'To get started, just tap the \'Add new session\' button at the top of the screen.',
+                  RichText(
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey)),
+                      text: TextSpan(
+                          text: 'To get started, just tap the',
+                          style: TextStyle(color: Colors.grey, fontSize: 18.0),
+                          children: [
+                            WidgetSpan(
+                                child: Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 3.0),
+                                    child: Icon(Icons.add_circle_outline,
+                                        color: Colors.grey, size: 18.0))),
+                            TextSpan(
+                                text:
+                                    'button at the top of the screen to add a new session.')
+                          ]))
                 ])));
   }
 

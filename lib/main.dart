@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'session.dart';
 import 'session_list.dart';
+import 'settings.dart';
 import 'traindown_editor.dart';
 import 'traindown_viewer.dart';
 
@@ -50,11 +51,14 @@ class _Transponder extends State<Transponder> {
 
   Future<void> _initAppData() async {
     Directory directory = await getApplicationDocumentsDirectory();
-    setState(() => _appData = directory);
     List<FileSystemEntity> files = directory.listSync();
-    if (files.isNotEmpty) {
-      files.forEach((file) => _sessions.add(Session(file, empty: false)));
-    }
+    setState(() {
+      _appData = directory;
+      if (files.isNotEmpty) {
+        files.forEach((file) => _sessions.add(Session(file, empty: false)));
+      }
+      _sessions.sort((a, b) => b.filename.compareTo(a.filename));
+    });
   }
 
   File moveFile(File sourceFile, String newPath) {
@@ -70,7 +74,7 @@ class _Transponder extends State<Transponder> {
   Widget _renderCreateSessionButton() {
     return FlatButton(
         textColor: Colors.blue,
-        child: Text('Add new session'),
+        child: Icon(Icons.add_circle_outline),
         onPressed: () => _createSession());
   }
 
@@ -88,6 +92,20 @@ class _Transponder extends State<Transponder> {
           _activeSession = _sessions[index];
           _showSessionViewer();
         });
+  }
+
+  Widget _renderSettingsButton() {
+    return FlatButton(
+        textColor: Colors.blue,
+        child: Icon(Icons.settings),
+        onPressed: () => _showSettings());
+  }
+
+  Widget _renderTopBar() {
+    return Row(children: [
+      Expanded(child: _renderCreateSessionButton()),
+      Expanded(child: _renderSettingsButton())
+    ]);
   }
 
   Future<void> _sendEmail(int sessionIndex) async {
@@ -225,6 +243,22 @@ class _Transponder extends State<Transponder> {
     );
   }
 
+  void _showSettings() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: Settings(),
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    );
+  }
+
   void _writeSession(String content) =>
       _activeSession.file.writeAsString(content);
 
@@ -268,10 +302,7 @@ class _Transponder extends State<Transponder> {
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  _renderCreateSessionButton(),
-                  _renderSessionList()
-                ])));
+                children: <Widget>[_renderTopBar(), _renderSessionList()])));
   }
 }
 
