@@ -56,12 +56,17 @@ class TraindownViewer extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
             itemCount: notes.length,
             itemBuilder: (BuildContext context, int index) {
-              return Row(children: [
-                Icon(Icons.lens, size: 6.0),
-                Padding(
-                    padding: EdgeInsets.only(left: 5.0),
-                    child: Text(notes[index]))
-              ]);
+              return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                        padding: EdgeInsets.only(top: 6.0),
+                        child: Icon(Icons.lens, size: 6.0)),
+                    Expanded(
+                        child: Padding(
+                            padding: EdgeInsets.only(left: 5.0),
+                            child: Text(notes[index])))
+                  ]);
             }));
   }
 

@@ -58,14 +58,16 @@ class SettingsState extends State<Settings> {
               ),
               TextFormField(
                 decoration: const InputDecoration(
-                  hintText: 'heavy@weights.com',
-                  labelText: 'Send to email',
+                  hintText: 'heavy@weights.com, you@rad.com',
+                  labelText: 'Send to email(s)',
                 ),
+                initialValue:
+                    widget.sharedPreferences.getString('sendToEmails'),
                 onSaved: (String value) {
                   if (value == null || value.isEmpty) {
-                    widget.sharedPreferences.remove('sendToEmail');
+                    widget.sharedPreferences.remove('sendToEmails');
                   } else {
-                    widget.sharedPreferences.setString('sendToEmail', value);
+                    widget.sharedPreferences.setString('sendToEmails', value);
                   }
                 },
                 validator: (value) {

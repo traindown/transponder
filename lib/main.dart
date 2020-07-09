@@ -120,9 +120,13 @@ class _Transponder extends State<Transponder> {
     Session session = _sessions[sessionIndex];
     String body = session.file.readAsStringSync();
     List<String> recipients =
-        (widget.sharedPreferences.getString('sendToEmails') ?? '')
-            .split(',')
-            .map((e) => e.trim());
+        widget.sharedPreferences.getString('sendToEmails') == null
+            ? []
+            : widget.sharedPreferences
+                .getString('sendToEmails')
+                .split(',')
+                .map((e) => e.trim())
+                .toList();
     String subject = session.name;
     final Email email = Email(
       body: body,
