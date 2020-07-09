@@ -1,8 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 // Create a Form widget.
 class Settings extends StatefulWidget {
+  final SharedPreferences sharedPreferences;
+
+  Settings({Key key, @required this.sharedPreferences})
+      : assert(sharedPreferences != null),
+        super(key: key);
+
   @override
   SettingsState createState() {
     return SettingsState();
@@ -31,7 +39,16 @@ class SettingsState extends State<Settings> {
                   hintText: 'Unit like lbs or kgs',
                   labelText: 'Default session unit',
                 ),
-                initialValue: 'lbs',
+                // TODO: Constantize the keys
+                initialValue:
+                    widget.sharedPreferences.getString('defaultUnit') ??
+                        'fucks',
+                onSaved: (String value) {
+                  if (value == null || value.isEmpty) {
+                    value = 'lbs';
+                  }
+                  widget.sharedPreferences.setString('defaultUnit', value);
+                },
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'You need to specify a default unit like lbs or kgs';
@@ -44,6 +61,13 @@ class SettingsState extends State<Settings> {
                   hintText: 'heavy@weights.com',
                   labelText: 'Send to email',
                 ),
+                onSaved: (String value) {
+                  if (value == null || value.isEmpty) {
+                    widget.sharedPreferences.remove('sendToEmail');
+                  } else {
+                    widget.sharedPreferences.setString('sendToEmail', value);
+                  }
+                },
                 validator: (value) {
                   if (value.isNotEmpty &&
                       (!value.contains('@') || !value.contains('.'))) {

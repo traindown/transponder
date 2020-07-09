@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'session.dart';
 import 'session_list.dart';
@@ -12,7 +13,13 @@ import 'settings.dart';
 import 'traindown_editor.dart';
 import 'traindown_viewer.dart';
 
-void main() => runApp(MaterialApp(home: Scaffold(body: Transponder())));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final SharedPreferences sharedPreferences =
+      await SharedPreferences.getInstance();
+  runApp(MaterialApp(
+      home: Scaffold(body: Transponder(sharedPreferences: sharedPreferences))));
+}
 
 class _Transponder extends State<Transponder> {
   Session _activeSession;
@@ -38,7 +45,8 @@ class _Transponder extends State<Transponder> {
 
   Future<void> _createSession() async {
     String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
-    Session session = Session(File(fullFilePath(tmpFilename)));
+    Session session = Session(File(fullFilePath(tmpFilename)),
+        unit: widget.sharedPreferences.getString('defaultUnit'));
     setState(() {
       _sessions.add(session);
       _activeSession = session;
@@ -111,11 +119,15 @@ class _Transponder extends State<Transponder> {
   Future<void> _sendEmail(int sessionIndex) async {
     Session session = _sessions[sessionIndex];
     String body = session.file.readAsStringSync();
+    List<String> recipients =
+        (widget.sharedPreferences.getString('sendToEmails') ?? '')
+            .split(',')
+            .map((e) => e.trim());
     String subject = session.name;
     final Email email = Email(
       body: body,
       subject: subject,
-      recipients: ['tyler@greaterscott.com'],
+      recipients: recipients,
       attachmentPaths: [session.file.path],
     );
 
@@ -143,6 +155,14 @@ class _Transponder extends State<Transponder> {
             ],
           );
         });
+  }
+
+  void setPreference(String key, {int integerValue, String stringValue}) {
+    if (integerValue != null) {
+      widget.sharedPreferences.setInt(key, integerValue);
+    } else if (stringValue != null) {
+      widget.sharedPreferences.setString(key, stringValue);
+    }
   }
 
   Future<void> _showDeleteModal(int sessionIndex) async {
@@ -253,14 +273,11 @@ class _Transponder extends State<Transponder> {
       builder: (BuildContext context) {
         return Container(
             height: MediaQuery.of(context).size.height * 0.9,
-            child: Settings(),
+            child: Settings(sharedPreferences: widget.sharedPreferences),
             padding: EdgeInsets.only(top: 20.0));
       },
     );
   }
-
-  void _writeSession(String content) =>
-      _activeSession.file.writeAsString(content);
 
   void _syncFilenameToContent() {
     String content = _activeSession.file.readAsStringSync();
@@ -287,6 +304,9 @@ class _Transponder extends State<Transponder> {
     setState(() => _activeSession = _activeSession);
   }
 
+  void _writeSession(String content) =>
+      _activeSession.file.writeAsString(content);
+
   @override
   Widget build(BuildContext context) {
     if (_appData == null) _initAppData();
@@ -307,7 +327,11 @@ class _Transponder extends State<Transponder> {
 }
 
 class Transponder extends StatefulWidget {
-  Transponder({Key key}) : super(key: key);
+  final SharedPreferences sharedPreferences;
+
+  const Transponder({Key key, @required this.sharedPreferences})
+      : assert(sharedPreferences != null),
+        super(key: key);
 
   @override
   _Transponder createState() => _Transponder();
