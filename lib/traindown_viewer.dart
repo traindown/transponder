@@ -20,28 +20,55 @@ class TraindownViewer extends StatelessWidget {
     if (kvps.isEmpty) return null;
 
     return Container(
-        color: Colors.grey[100],
-        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
-        child: ListView.builder(
-            primary: false,
-            shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-            itemCount: kvps.keys.length,
-            itemBuilder: (BuildContext context, int keyIndex) {
-              return Row(children: [
-                Padding(
-                    padding: EdgeInsets.only(left: 5.0),
-                    child: Text.rich(TextSpan(
-                      text: '${kvps.keys.elementAt(keyIndex)}: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: kvps[kvps.keys.elementAt(keyIndex)],
-                            style: TextStyle(fontWeight: FontWeight.normal)),
-                      ],
-                    )))
-              ]);
-            }));
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
+      child: Wrap(
+          spacing: 4.0,
+          runSpacing: -8.0,
+          children: kvps.keys.map((k) {
+            return Chip(
+                backgroundColor: Colors.grey[200],
+                label: Text.rich(TextSpan(
+                  text: '$k: ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: kvps[k],
+                        style: TextStyle(fontWeight: FontWeight.normal)),
+                  ],
+                )));
+          }).toList()),
+    );
+  }
+
+  Widget renderMovement(Movement movement) {
+    return Padding(
+        padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 20.0),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text.rich(TextSpan(
+                  text: movement.name.trim(),
+                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                  children: movement.superSetted
+                      ? <TextSpan>[
+                          TextSpan(
+                              text: ' (superset)',
+                              style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14.0)),
+                        ]
+                      : [],
+                )),
+                Text(movement.volume.toString(),
+                    style: TextStyle(fontSize: 18.0))
+              ]),
+              Divider(color: Colors.grey),
+              renderNotes(movement.metadata.notes),
+              renderKvps(movement.metadata.kvps),
+              renderPerformances(movement.performances),
+            ].where((Object o) => o != null).toList()));
   }
 
   Widget renderNotes(List<String> notes) {
@@ -108,37 +135,6 @@ class TraindownViewer extends StatelessWidget {
       }
     });
     return Column(children: rows);
-  }
-
-  Widget renderMovement(Movement movement) {
-    return Padding(
-        padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 20.0),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text.rich(TextSpan(
-                  text: movement.name.trim(),
-                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                  children: movement.superSetted
-                      ? <TextSpan>[
-                          TextSpan(
-                              text: ' (superset)',
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 14.0)),
-                        ]
-                      : [],
-                )),
-                Text(movement.volume.toString(),
-                    style: TextStyle(fontSize: 18.0))
-              ]),
-              Divider(color: Colors.grey),
-              renderNotes(movement.metadata.notes),
-              renderKvps(movement.metadata.kvps),
-              renderPerformances(movement.performances),
-            ].where((Object o) => o != null).toList()));
   }
 
   String get occurred => DateFormat.yMMMMEEEEd('en_US').format(parser.occurred);

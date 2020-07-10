@@ -40,7 +40,11 @@ class _Transponder extends State<Transponder> {
     String content = _sessions[sessionIndex].file.readAsStringSync();
     tmpFile.writeAsStringSync(content);
     Session session = Session(tmpFile, empty: false);
-    setState(() => _sessions.add(session));
+    setState(() {
+      _sessions.add(session);
+      _activeSession = session;
+      _showSessionEditor();
+    });
   }
 
   Future<void> _createSession() async {

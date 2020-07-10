@@ -30,50 +30,53 @@ class SessionList extends StatelessWidget {
             itemBuilder: (context, index) {
               return Card(
                 child: ListTile(
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                   onTap: () => onView(index),
-                  leading: IconButton(
-                    icon: Icon(Icons.edit),
-                    color: Colors.blue,
-                    onPressed: () => onEdit(index),
-                  ),
                   title: Text(sessions[index].name),
                   subtitle: Text(sessions[index].liftsSentence),
-                  trailing: PopupMenuButton<SessionMenuOption>(
-                      elevation: 2.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      tooltip: 'Session action menu',
-                      onSelected: (SessionMenuOption action) {
-                        switch (action) {
-                          case SessionMenuOption.delete:
-                            onDelete(index);
-                            break;
-                          case SessionMenuOption.copy:
-                            onCopy(index);
-                            break;
-                          case SessionMenuOption.email:
-                            onEmail(index);
-                            break;
-                        }
-                      },
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<SessionMenuOption>>[
-                            const PopupMenuItem<SessionMenuOption>(
-                              value: SessionMenuOption.copy,
-                              child: Text('Create copy'),
-                            ),
-                            const PopupMenuItem<SessionMenuOption>(
-                              value: SessionMenuOption.email,
-                              child: Text('Send via email'),
-                            ),
-                            const PopupMenuDivider(),
-                            const PopupMenuItem<SessionMenuOption>(
-                              value: SessionMenuOption.delete,
-                              child: Text('Delete session',
-                                  style: TextStyle(color: Colors.red)),
-                            ),
-                          ]),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(
+                      icon: Icon(Icons.fitness_center),
+                      color: Colors.blue,
+                      onPressed: () => onEdit(index),
+                    ),
+                    PopupMenuButton<SessionMenuOption>(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        tooltip: 'Session action menu',
+                        onSelected: (SessionMenuOption action) {
+                          switch (action) {
+                            case SessionMenuOption.delete:
+                              onDelete(index);
+                              break;
+                            case SessionMenuOption.copy:
+                              onCopy(index);
+                              break;
+                            case SessionMenuOption.email:
+                              onEmail(index);
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<SessionMenuOption>>[
+                              const PopupMenuItem<SessionMenuOption>(
+                                value: SessionMenuOption.copy,
+                                child: Text('Create copy'),
+                              ),
+                              const PopupMenuItem<SessionMenuOption>(
+                                value: SessionMenuOption.email,
+                                child: Text('Send via email'),
+                              ),
+                              const PopupMenuDivider(),
+                              const PopupMenuItem<SessionMenuOption>(
+                                value: SessionMenuOption.delete,
+                                child: Text('Delete session',
+                                    style: TextStyle(color: Colors.red)),
+                              ),
+                            ])
+                  ]),
                 ),
               );
             }));
