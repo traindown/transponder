@@ -32,7 +32,7 @@ dependencies:
   intl:
   path_provider:
   shared_preferences: '>=0.5.8 <2.0.0'
-  traindown: ^1.5.0
+  traindown: ^1.6.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.7.5
