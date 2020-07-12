@@ -51,6 +51,11 @@ class _TraindownEditor extends State<TraindownEditor> {
     widget.onChange(_controller.value.text);
   }
 
+  // TODO: Suggestions
+  void _handleTextChange(String text) {
+    widget.onChange(text);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,23 +66,24 @@ class _TraindownEditor extends State<TraindownEditor> {
             child: Padding(
               padding: EdgeInsets.all(10.0),
               child: EditableText(
-                autocorrect: false,
+                autocorrect: true,
                 autofocus: true,
                 backgroundCursorColor: Colors.blue,
                 cursorColor: Colors.red,
                 cursorWidth: 2,
                 controller: _controller,
-                enableSuggestions: false,
+                enableInteractiveSelection: true,
+                enableSuggestions: true,
                 expands: true,
                 focusNode: FocusNode(),
-                onChanged: (String text) => widget.onChange(text),
+                onChanged: (String text) => _handleTextChange(text),
                 scrollPadding: EdgeInsets.all(20.0),
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
                 style: TextStyle(
                     color: Colors.black.withOpacity(0.8),
                     fontSize: 20,
-                    fontWeight: FontWeight.bold),
+                    fontWeight: FontWeight.normal),
               ),
             ),
           ),
