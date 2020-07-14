@@ -5,6 +5,7 @@ import 'package:traindown/traindown.dart';
 
 class Session {
   File file;
+  List<Movement> _movements;
 
   Session(this.file, {bool empty = true, String unit = 'lbs'}) {
     if (empty) {
@@ -34,16 +35,9 @@ class Session {
   String get filename => file.path.split('/').last;
 
   List<String> get lifts {
-    Parser parser = Parser.for_file(file.path);
-    try {
-      parser.call();
-    } catch (_) {
-      return ['No lifts yet'];
-    }
+    if (movements.isEmpty) return ['No lifts yet'];
 
-    if (parser.movements.isEmpty) return ['No lifts yet'];
-
-    return parser.movements.map((m) => m.name).toList();
+    return movements.map((m) => m.name).toList();
   }
 
   String get liftsSentence {
@@ -58,6 +52,21 @@ class Session {
     return '${lifts.sublist(0, 3).join(", ")}, and ${lifts.length - 3} others';
   }
 
+  List<Movement> get movements {
+    if (_movements != null) return _movements;
+
+    Parser parser = Parser.for_file(file.path);
+    try {
+      parser.call();
+    } catch (_) {
+      return [];
+    }
+
+    _movements = parser.movements;
+
+    return _movements;
+  }
+
   String get name {
     if (filename == null) return defaultSessionName;
 
@@ -69,4 +78,20 @@ class Session {
 
     return DateFormat('E, LLLL d, y').format(date);
   }
+
+  int get repCount {
+    return movements.fold(0, (ms, m) {
+      return ms + m.performances.fold(0, (ps, p) => ps + (p.repeat * p.reps));
+    });
+  }
+
+  int get setCount {
+    return movements.fold(0, (ms, m) {
+      return ms + m.performances.fold(0, (ps, p) => ps + p.repeat);
+    });
+  }
+
+  int get volume => movements.fold(0, (acc, cur) => acc + cur.volume);
+
+  String get volumeString => NumberFormat.decimalPattern().format(volume);
 }

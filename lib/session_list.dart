@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'session.dart';
 
-enum SessionMenuOption { copy, delete, email }
+enum SessionMenuOption { copy, delete, edit, email }
 
 class SessionList extends StatelessWidget {
   final List<Session> sessions;
@@ -28,57 +28,106 @@ class SessionList extends StatelessWidget {
         child: ListView.builder(
             itemCount: sessions.length,
             itemBuilder: (context, index) {
+              Session session = sessions[index];
+
               return Card(
-                child: ListTile(
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  onTap: () => onView(index),
-                  title: Text(sessions[index].name),
-                  subtitle: Text(sessions[index].liftsSentence),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(
-                      icon: Icon(Icons.fitness_center),
-                      color: Colors.blue,
-                      onPressed: () => onEdit(index),
-                    ),
-                    PopupMenuButton<SessionMenuOption>(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        tooltip: 'Session action menu',
-                        onSelected: (SessionMenuOption action) {
-                          switch (action) {
-                            case SessionMenuOption.delete:
-                              onDelete(index);
-                              break;
-                            case SessionMenuOption.copy:
-                              onCopy(index);
-                              break;
-                            case SessionMenuOption.email:
-                              onEmail(index);
-                              break;
-                          }
-                        },
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<SessionMenuOption>>[
-                              const PopupMenuItem<SessionMenuOption>(
-                                value: SessionMenuOption.copy,
-                                child: Text('Create copy'),
-                              ),
-                              const PopupMenuItem<SessionMenuOption>(
-                                value: SessionMenuOption.email,
-                                child: Text('Send via email'),
-                              ),
-                              const PopupMenuDivider(),
-                              const PopupMenuItem<SessionMenuOption>(
-                                value: SessionMenuOption.delete,
-                                child: Text('Delete session',
-                                    style: TextStyle(color: Colors.red)),
-                              ),
-                            ])
-                  ]),
-                ),
-              );
+                  child: InkWell(
+                      splashColor: Colors.blue.withAlpha(30),
+                      onTap: () => onView(index),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(15.0, 0, 15.0, 10.0),
+                        child: Column(children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.all(0.0),
+                            onTap: () => onView(index),
+                            title: Text(session.name),
+                            subtitle: Text(session.liftsSentence),
+                            trailing:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              PopupMenuButton<SessionMenuOption>(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  tooltip: 'Session action menu',
+                                  onSelected: (SessionMenuOption action) {
+                                    switch (action) {
+                                      case SessionMenuOption.copy:
+                                        onCopy(index);
+                                        break;
+                                      case SessionMenuOption.delete:
+                                        onDelete(index);
+                                        break;
+                                      case SessionMenuOption.edit:
+                                        onEdit(index);
+                                        break;
+                                      case SessionMenuOption.email:
+                                        onEmail(index);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<SessionMenuOption>>[
+                                        const PopupMenuItem<SessionMenuOption>(
+                                          value: SessionMenuOption.edit,
+                                          child: ListTile(
+                                              leading: Icon(Icons.edit),
+                                              title: Text('Edit')),
+                                        ),
+                                        const PopupMenuItem<SessionMenuOption>(
+                                          value: SessionMenuOption.copy,
+                                          child: ListTile(
+                                              leading: Icon(Icons.content_copy),
+                                              title: Text('Copy')),
+                                        ),
+                                        const PopupMenuItem<SessionMenuOption>(
+                                          value: SessionMenuOption.email,
+                                          child: ListTile(
+                                              leading: Icon(Icons.email),
+                                              title: Text('Email')),
+                                        ),
+                                        const PopupMenuDivider(),
+                                        const PopupMenuItem<SessionMenuOption>(
+                                            value: SessionMenuOption.delete,
+                                            child: ListTile(
+                                                leading: Icon(Icons.delete),
+                                                title: Text('Delete',
+                                                    style: TextStyle(
+                                                        color: Colors.red)))),
+                                      ])
+                            ]),
+                          ),
+                          Row(children: [
+                            Expanded(
+                                child: Column(children: [
+                              Text(session.volumeString,
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('volume')
+                            ])),
+                            Expanded(
+                                child: Column(children: [
+                              Text(session.movements.length.toString(),
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('exercises')
+                            ])),
+                            Expanded(
+                                child: Column(children: [
+                              Text(session.setCount.toString(),
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('sets')
+                            ])),
+                            Expanded(
+                                child: Column(children: [
+                              Text(session.repCount.toString(),
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('reps')
+                            ])),
+                          ])
+                        ]),
+                      )));
             }));
   }
 
