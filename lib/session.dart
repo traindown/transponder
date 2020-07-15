@@ -15,6 +15,11 @@ class Session {
 
   final String defaultSessionName = 'Traindown Session';
 
+  Session flushCache() {
+    _movements = null;
+    return this;
+  }
+
   bool teardown() {
     try {
       file.deleteSync();

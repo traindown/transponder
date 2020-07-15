@@ -263,10 +263,16 @@ class _Transponder extends State<Transponder> {
         borderRadius: BorderRadius.circular(10.0),
       ),
       builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: TraindownViewer(content: _activeSessionContent),
-            padding: EdgeInsets.only(top: 20.0));
+        return DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.75,
+            minChildSize: 0.75,
+            builder: (_, controller) {
+              return Container(
+                  child: TraindownViewer(
+                      content: _activeSessionContent, controller: controller),
+                  padding: EdgeInsets.only(top: 20.0));
+            });
       },
     );
   }
@@ -309,7 +315,7 @@ class _Transponder extends State<Transponder> {
     }
 
     // NOTE: This just kicks the getters for _activeSession
-    setState(() => _activeSession = _activeSession);
+    setState(() => _activeSession = _activeSession.flushCache());
   }
 
   void _writeSession(String content) =>

@@ -40,11 +40,12 @@ class SessionList extends StatelessWidget {
                           ListTile(
                             contentPadding: EdgeInsets.all(0.0),
                             onTap: () => onView(index),
-                            title: Text(session.name),
-                            subtitle: Text(session.liftsSentence),
+                            title: Text(session.name,
+                                style: TextStyle(fontSize: 20.0)),
                             trailing:
                                 Row(mainAxisSize: MainAxisSize.min, children: [
                               PopupMenuButton<SessionMenuOption>(
+                                  icon: Icon(Icons.more_vert),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
@@ -96,34 +97,44 @@ class SessionList extends StatelessWidget {
                                       ])
                             ]),
                           ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10.0),
+                              child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Wrap(children: [
+                                    Text(session.liftsSentence,
+                                        style: TextStyle(color: Colors.grey))
+                                  ]))),
                           Row(children: [
                             Expanded(
                                 child: Column(children: [
                               Text(session.volumeString,
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
-                              Text('volume')
+                              Text('volume',
+                                  style: TextStyle(color: Colors.grey))
                             ])),
                             Expanded(
                                 child: Column(children: [
                               Text(session.movements.length.toString(),
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
-                              Text('exercises')
+                              Text('exercises',
+                                  style: TextStyle(color: Colors.grey))
                             ])),
                             Expanded(
                                 child: Column(children: [
                               Text(session.setCount.toString(),
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
-                              Text('sets')
+                              Text('sets', style: TextStyle(color: Colors.grey))
                             ])),
                             Expanded(
                                 child: Column(children: [
                               Text(session.repCount.toString(),
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
-                              Text('reps')
+                              Text('reps', style: TextStyle(color: Colors.grey))
                             ])),
                           ])
                         ]),
