@@ -7,9 +7,9 @@ import 'package:traindown/traindown.dart';
 class TraindownViewer extends StatelessWidget {
   final String content;
   final Parser parser;
-  final ScrollController controller;
+  final ScrollController scrollController;
 
-  TraindownViewer({Key key, this.content, this.controller})
+  TraindownViewer({Key key, this.content, this.scrollController})
       : parser = Parser.for_string(content),
         super(key: key) {
     parser.call();
@@ -179,20 +179,21 @@ class TraindownViewer extends StatelessWidget {
         body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-          Container(
-              margin: EdgeInsets.symmetric(vertical: 20.0),
-              child: Text(occurred,
-                  style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center)),
           Expanded(
               child: ListView(
                   primary: false,
-                  controller: controller,
-                  children: ([renderNotes(parser.metadata.notes)] +
-                          [renderKvps(parser.metadata.kvps)] +
-                          movements.map((m) => renderMovement(m)).toList())
-                      .where((Object o) => o != null)
-                      .toList()))
+                  controller: scrollController,
+                  children: <Widget>[
+                        Text(occurred,
+                            style: TextStyle(
+                                fontSize: 24.0, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center)
+                      ] +
+                      ([renderNotes(parser.metadata.notes)] +
+                              [renderKvps(parser.metadata.kvps)] +
+                              movements.map((m) => renderMovement(m)).toList())
+                          .where((Object o) => o != null)
+                          .toList()))
         ]));
   }
 }

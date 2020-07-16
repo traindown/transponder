@@ -246,11 +246,18 @@ class _Transponder extends State<Transponder> {
         borderRadius: BorderRadius.circular(10.0),
       ),
       builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: TraindownEditor(
-                content: _activeSessionContent, onChange: _writeSession),
-            padding: EdgeInsets.only(top: 20.0));
+        return DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.75,
+            minChildSize: 0.75,
+            builder: (_, controller) {
+              return Container(
+                  child: TraindownEditor(
+                      content: _activeSessionContent,
+                      onChange: _writeSession,
+                      scrollController: controller),
+                  padding: EdgeInsets.only(top: 20.0));
+            });
       },
     ).whenComplete(() => _syncFilenameToContent());
   }
@@ -270,7 +277,8 @@ class _Transponder extends State<Transponder> {
             builder: (_, controller) {
               return Container(
                   child: TraindownViewer(
-                      content: _activeSessionContent, controller: controller),
+                      content: _activeSessionContent,
+                      scrollController: controller),
                   padding: EdgeInsets.only(top: 20.0));
             });
       },
