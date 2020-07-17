@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'traindown_info.dart';
+
 // Create a Form widget.
 class Settings extends StatefulWidget {
   final SharedPreferences sharedPreferences;
@@ -78,6 +80,7 @@ class SettingsState extends State<Settings> {
                   return null;
                 },
               ),
+              TraindownInfo()
             ],
           )),
     );

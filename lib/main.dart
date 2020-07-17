@@ -248,8 +248,8 @@ class _Transponder extends State<Transponder> {
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
             expand: false,
-            initialChildSize: 0.75,
-            minChildSize: 0.75,
+            initialChildSize: 0.85,
+            minChildSize: 0.85,
             builder: (_, controller) {
               return Container(
                   child: TraindownEditor(
@@ -272,8 +272,8 @@ class _Transponder extends State<Transponder> {
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
             expand: false,
-            initialChildSize: 0.75,
-            minChildSize: 0.75,
+            initialChildSize: 0.85,
+            minChildSize: 0.85,
             builder: (_, controller) {
               return Container(
                   child: TraindownViewer(

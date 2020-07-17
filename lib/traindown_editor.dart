@@ -33,7 +33,7 @@ class _TraindownEditor extends State<TraindownEditor> {
   }
 
   void _addText(String addition) {
-    addition = addition.isEmpty ? '' : addition;
+    //addition = addition.isEmpty ? '' : addition;
     int start = _controller.selection.extentOffset;
     int end = _controller.selection.extentOffset + addition.length;
     _controller.value = _controller.value.copyWith(
@@ -58,72 +58,81 @@ class _TraindownEditor extends State<TraindownEditor> {
     widget.onChange(text);
   }
 
+  Widget buttonBar() {
+    return Positioned(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 0.0,
+        right: 0.0,
+        child: ButtonBar(
+          alignment: MainAxisAlignment.center,
+          buttonHeight: 10.0,
+          buttonMinWidth: 10.0,
+          buttonPadding: EdgeInsets.all(1.0),
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            FlatButton(
+              child: Text('#', style: TextStyle(fontSize: 20.0)),
+              onPressed: () => _addText('# '),
+            ),
+            FlatButton(
+              child: Text('*', style: TextStyle(fontSize: 24.0)),
+              onPressed: () => _addText('* '),
+            ),
+            FlatButton(
+              child: Text(':',
+                  style:
+                      TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+              onPressed: () => _addText(': '),
+            ),
+            FlatButton(
+              child: Text('+', style: TextStyle(fontSize: 20.0)),
+              onPressed: () => _addText('+ '),
+            ),
+            FlatButton(
+              child: Text('r', style: TextStyle(fontSize: 20.0)),
+              onPressed: () => _addText('r '),
+            ),
+            FlatButton(
+              child: Text('s', style: TextStyle(fontSize: 20.0)),
+              onPressed: () => _addText('s '),
+            ),
+            FlatButton(
+              child: Icon(Icons.photo_filter),
+              onPressed: () => _formatText(),
+            ),
+          ],
+        ));
+  }
+
+  Widget textArea() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          15.0, 0.0, 15.0, (MediaQuery.of(context).viewInsets.bottom) + 50.0),
+      child: EditableText(
+        autocorrect: true,
+        autofocus: true,
+        backgroundCursorColor: Colors.blue,
+        cursorColor: Colors.red,
+        cursorWidth: 2,
+        controller: _controller,
+        enableInteractiveSelection: true,
+        enableSuggestions: true,
+        expands: true,
+        focusNode: FocusNode(),
+        onChanged: (String text) => _handleTextChange(text),
+        scrollController: widget.scrollController,
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        style: TextStyle(
+            color: Colors.black.withOpacity(0.8),
+            fontSize: 20,
+            fontWeight: FontWeight.normal),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-        //crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0,
-                (MediaQuery.of(context).viewInsets.bottom) + 50.0),
-            child: EditableText(
-              autocorrect: true,
-              autofocus: true,
-              backgroundCursorColor: Colors.blue,
-              cursorColor: Colors.red,
-              cursorWidth: 2,
-              controller: _controller,
-              enableInteractiveSelection: true,
-              enableSuggestions: true,
-              expands: true,
-              focusNode: FocusNode(),
-              onChanged: (String text) => _handleTextChange(text),
-              scrollController: widget.scrollController,
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
-              style: TextStyle(
-                  color: Colors.black.withOpacity(0.8),
-                  fontSize: 20,
-                  fontWeight: FontWeight.normal),
-            ),
-          ),
-          Positioned(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 0.0,
-              right: 0.0,
-              child: ButtonBar(
-                alignment: MainAxisAlignment.center,
-                buttonHeight: 10.0,
-                buttonMinWidth: 10.0,
-                buttonPadding: EdgeInsets.all(1.0),
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  FlatButton(
-                    child: Text('Meta'),
-                    onPressed: () => _addText('# '),
-                  ),
-                  FlatButton(
-                    child: Text('Colon'),
-                    onPressed: () => _addText(': '),
-                  ),
-                  FlatButton(
-                    child: Text('Note'),
-                    onPressed: () => _addText('* '),
-                  ),
-                  FlatButton(
-                    child: Text('Superset'),
-                    onPressed: () => _addText('+ '),
-                  ),
-                  FlatButton(
-                    child: Text('Date'),
-                    onPressed: () => _addText('@ '),
-                  ),
-                  FlatButton(
-                    child: Text('Tidy'),
-                    onPressed: () => _formatText(),
-                  ),
-                ],
-              )),
-        ]);
+    return Stack(children: <Widget>[textArea(), buttonBar()]);
   }
 }

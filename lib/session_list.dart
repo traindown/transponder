@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'session.dart';
+import 'traindown_info.dart';
 
 enum SessionMenuOption { copy, delete, edit, email }
 
@@ -169,7 +170,8 @@ class SessionList extends StatelessWidget {
                             TextSpan(
                                 text:
                                     'button at the top of the screen to add a new session.')
-                          ]))
+                          ])),
+                  TraindownInfo()
                 ])));
   }
 
