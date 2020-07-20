@@ -42,7 +42,7 @@ class SessionList extends StatelessWidget {
                             contentPadding: EdgeInsets.all(0.0),
                             onTap: () => onView(index),
                             title: Text(session.name,
-                                style: TextStyle(fontSize: 20.0)),
+                                style: Theme.of(context).textTheme.headline6),
                             trailing:
                                 Row(mainAxisSize: MainAxisSize.min, children: [
                               PopupMenuButton<SessionMenuOption>(
@@ -104,7 +104,9 @@ class SessionList extends StatelessWidget {
                                   alignment: Alignment.centerLeft,
                                   child: Wrap(children: [
                                     Text(session.liftsSentence,
-                                        style: TextStyle(color: Colors.grey))
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2)
                                   ]))),
                           Row(children: [
                             Expanded(
