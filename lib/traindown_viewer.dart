@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 
 import 'package:traindown/traindown.dart';
 
+import 'kvp_chip.dart';
+import 'note.dart';
+
 class TraindownViewer extends StatelessWidget {
   final String content;
   final Parser parser;
@@ -28,24 +31,9 @@ class TraindownViewer extends StatelessWidget {
           child: Wrap(
               spacing: 4.0,
               runSpacing: 4.0,
-              children: kvps.keys.map((k) {
-                return Chip(
-                    backgroundColor: Theme.of(context).accentColor,
-                    labelPadding: EdgeInsets.all(0.0),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: EdgeInsets.all(5.0),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                    label: Text.rich(TextSpan(
-                      text: '$k: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: kvps[k],
-                            style: TextStyle(fontWeight: FontWeight.normal)),
-                      ],
-                    )));
-              }).toList()),
+              children: kvps.keys
+                  .map((k) => KvpChip(keyLabel: k, valueLabel: kvps[k]))
+                  .toList()),
         ));
   }
 
@@ -64,7 +52,7 @@ class TraindownViewer extends StatelessWidget {
                             Expanded(
                                 child: Text.rich(TextSpan(
                               text: movement.name.trim(),
-                              style: Theme.of(context).textTheme.headline2,
+                              style: Theme.of(context).textTheme.headline3,
                               children: movement.superSetted
                                   ? <TextSpan>[
                                       TextSpan(
@@ -79,9 +67,11 @@ class TraindownViewer extends StatelessWidget {
                             Text(
                                 NumberFormat.decimalPattern()
                                     .format(movement.volume),
-                                style: TextStyle(
-                                    color: Theme.of(context).accentColor,
-                                    fontSize: 18.0))
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline3
+                                    .copyWith(
+                                        color: Theme.of(context).accentColor))
                           ]),
                       Divider(color: Colors.grey),
                       renderNotes(context, movement.metadata.notes,
@@ -104,19 +94,7 @@ class TraindownViewer extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return Padding(
                   padding: EdgeInsets.fromLTRB(leftPad, 0.0, 0.0, 0.0),
-                  child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                            padding: EdgeInsets.only(top: 6.0),
-                            child: Icon(Icons.lens, size: 6.0)),
-                        Expanded(
-                            child: Padding(
-                                padding: EdgeInsets.only(left: 5.0),
-                                child: Text(notes[index],
-                                    style:
-                                        Theme.of(context).textTheme.bodyText2)))
-                      ]));
+                  child: Note(text: notes[index]));
             }));
   }
 
