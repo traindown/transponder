@@ -332,7 +332,7 @@ class _Transponder extends State<Transponder> {
             top: true,
             right: true,
             bottom: true,
-            minimum: const EdgeInsets.all(16.0),
+            minimum: const EdgeInsets.all(5.0),
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

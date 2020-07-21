@@ -15,7 +15,10 @@ class TraindownViewer extends StatelessWidget {
   TraindownViewer({Key key, this.content, this.scrollController})
       : parser = Parser.for_string(content),
         super(key: key) {
-    parser.call();
+    // TODO: Make this better
+    try {
+      parser.call();
+    } catch (e) {}
   }
 
   List<Movement> get movements => parser.movements;
@@ -30,7 +33,7 @@ class TraindownViewer extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Wrap(
               spacing: 4.0,
-              runSpacing: 4.0,
+              runSpacing: -8.0,
               children: kvps.keys
                   .map((k) => KvpChip(keyLabel: k, valueLabel: kvps[k]))
                   .toList()),
@@ -38,47 +41,44 @@ class TraindownViewer extends StatelessWidget {
   }
 
   Widget renderMovement(BuildContext context, Movement movement) {
-    return Padding(
-        padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 20.0),
-        child: Card(
-            child: Padding(
-                padding: EdgeInsets.all(15.0),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                                child: Text.rich(TextSpan(
-                              text: movement.name.trim(),
-                              style: Theme.of(context).textTheme.headline3,
-                              children: movement.superSetted
-                                  ? <TextSpan>[
-                                      TextSpan(
-                                          text: ' (superset)',
-                                          style: TextStyle(
-                                              color: Colors.grey,
-                                              fontWeight: FontWeight.normal,
-                                              fontSize: 14.0)),
-                                    ]
-                                  : [],
-                            ))),
-                            Text(
-                                NumberFormat.decimalPattern()
-                                    .format(movement.volume),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headline3
-                                    .copyWith(
-                                        color: Theme.of(context).accentColor))
-                          ]),
-                      Divider(color: Colors.grey),
-                      renderNotes(context, movement.metadata.notes,
-                          leftPad: 0.0),
-                      renderKvps(context, movement.metadata.kvps, leftPad: 0.0),
-                      renderPerformances(context, movement.performances),
-                    ].where((Object o) => o != null).toList()))));
+    return Card(
+        margin: EdgeInsets.all(10.0),
+        child: Padding(
+            padding: EdgeInsets.all(15.0),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                            child: Text.rich(TextSpan(
+                          text: movement.name.trim(),
+                          style: Theme.of(context).textTheme.headline3,
+                          children: movement.superSetted
+                              ? <TextSpan>[
+                                  TextSpan(
+                                      text: ' (superset)',
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 14.0)),
+                                ]
+                              : [],
+                        ))),
+                        Text(
+                            NumberFormat.decimalPattern()
+                                .format(movement.volume),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline3
+                                .copyWith(color: Theme.of(context).accentColor))
+                      ]),
+                  Divider(color: Colors.grey),
+                  renderNotes(context, movement.metadata.notes, leftPad: 0.0),
+                  renderKvps(context, movement.metadata.kvps, leftPad: 0.0),
+                  renderPerformances(context, movement.performances),
+                ].where((Object o) => o != null).toList())));
   }
 
   Widget renderNotes(BuildContext context, List<String> notes,
@@ -106,15 +106,15 @@ class TraindownViewer extends StatelessWidget {
           child: Row(children: [
             Expanded(
                 child: Text('Load',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.left)),
             Expanded(
                 child: Text('Reps',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.left)),
             Expanded(
                 child: Text('Sets',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.left)),
           ]))
     ];
@@ -124,7 +124,7 @@ class TraindownViewer extends StatelessWidget {
             child: Text.rich(
                 TextSpan(
                   text: p.load.toString(),
-                  style: TextStyle(fontSize: 16.0),
+                  style: Theme.of(context).textTheme.bodyText1,
                   children: <TextSpan>[
                     TextSpan(
                         text: p.unit, style: TextStyle(color: Colors.grey)),
@@ -135,7 +135,7 @@ class TraindownViewer extends StatelessWidget {
             child: Text.rich(
                 TextSpan(
                   text: p.reps.toString(),
-                  style: TextStyle(fontSize: 16.0),
+                  style: Theme.of(context).textTheme.bodyText1,
                   children: p.fails > 0
                       ? <TextSpan>[
                           TextSpan(
@@ -147,7 +147,8 @@ class TraindownViewer extends StatelessWidget {
                 textAlign: TextAlign.left)),
         Expanded(
             child: Text(p.repeat.toString(),
-                style: TextStyle(fontSize: 16.0), textAlign: TextAlign.left))
+                style: Theme.of(context).textTheme.bodyText1,
+                textAlign: TextAlign.left))
       ]));
 
       if (p.metadata.notes.isNotEmpty) {
@@ -158,6 +159,7 @@ class TraindownViewer extends StatelessWidget {
         rows.add(renderKvps(context, p.metadata.kvps, leftPad: 10.0));
       }
     });
+
     return Column(children: rows);
   }
 
@@ -174,9 +176,11 @@ class TraindownViewer extends StatelessWidget {
                   primary: false,
                   controller: scrollController,
                   children: <Widget>[
-                        Text(occurred,
-                            style: Theme.of(context).textTheme.headline1,
-                            textAlign: TextAlign.center)
+                        Padding(
+                            padding: EdgeInsets.only(bottom: 20.0),
+                            child: Text(occurred,
+                                style: Theme.of(context).textTheme.headline1,
+                                textAlign: TextAlign.center))
                       ] +
                       ([renderNotes(context, parser.metadata.notes)] +
                               [renderKvps(context, parser.metadata.kvps)] +

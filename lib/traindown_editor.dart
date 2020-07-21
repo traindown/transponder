@@ -123,10 +123,7 @@ class _TraindownEditor extends State<TraindownEditor> {
         scrollController: widget.scrollController,
         keyboardType: TextInputType.multiline,
         maxLines: null,
-        style: TextStyle(
-            color: Colors.black.withOpacity(0.8),
-            fontSize: 20,
-            fontWeight: FontWeight.normal),
+        style: Theme.of(context).textTheme.bodyText1,
       ),
     );
   }

@@ -24,6 +24,18 @@ class SessionList extends StatelessWidget {
       this.onView})
       : super(key: key);
 
+  Widget metric(BuildContext context, String amount, String label) {
+    return Expanded(
+        child: Column(children: [
+      Text(amount,
+          style: Theme.of(context)
+              .textTheme
+              .headline6
+              .copyWith(color: Theme.of(context).accentColor)),
+      Text(label, style: TextStyle(color: Colors.grey))
+    ]));
+  }
+
   Widget renderList(BuildContext context) {
     return Expanded(
         child: ListView.builder(
@@ -42,7 +54,7 @@ class SessionList extends StatelessWidget {
                             contentPadding: EdgeInsets.all(0.0),
                             onTap: () => onView(index),
                             title: Text(session.name,
-                                style: Theme.of(context).textTheme.headline6),
+                                style: Theme.of(context).textTheme.headline5),
                             trailing:
                                 Row(mainAxisSize: MainAxisSize.min, children: [
                               PopupMenuButton<SessionMenuOption>(
@@ -98,47 +110,23 @@ class SessionList extends StatelessWidget {
                                       ])
                             ]),
                           ),
-                          Padding(
+                          Container(
                               padding: EdgeInsets.only(bottom: 10.0),
                               child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: Wrap(children: [
                                     Text(session.liftsSentence,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle2)
+                                        style:
+                                            Theme.of(context).textTheme.caption)
                                   ]))),
                           Row(children: [
-                            Expanded(
-                                child: Column(children: [
-                              Text(session.volumeString,
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text('volume',
-                                  style: TextStyle(color: Colors.grey))
-                            ])),
-                            Expanded(
-                                child: Column(children: [
-                              Text(session.movements.length.toString(),
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text('exercises',
-                                  style: TextStyle(color: Colors.grey))
-                            ])),
-                            Expanded(
-                                child: Column(children: [
-                              Text(session.setCount.toString(),
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text('sets', style: TextStyle(color: Colors.grey))
-                            ])),
-                            Expanded(
-                                child: Column(children: [
-                              Text(session.repCount.toString(),
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text('reps', style: TextStyle(color: Colors.grey))
-                            ])),
+                            metric(context, session.volumeString, 'volume'),
+                            metric(context, session.movements.length.toString(),
+                                'exercises'),
+                            metric(
+                                context, session.setCount.toString(), 'sets'),
+                            metric(
+                                context, session.repCount.toString(), 'reps'),
                           ])
                         ]),
                       )));
