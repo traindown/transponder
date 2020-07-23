@@ -9,7 +9,7 @@ class TraindownInfo extends StatelessWidget {
     return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5.0),
-            color: Theme.of(context).accentColor),
+            color: Colors.orangeAccent[100]),
         margin: EdgeInsets.symmetric(vertical: 20.0),
         padding: EdgeInsets.all(20.0),
         child: Column(children: [

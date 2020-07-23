@@ -17,6 +17,7 @@ void main() async {
   final SharedPreferences sharedPreferences =
       await SharedPreferences.getInstance();
   runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: brightness,
         primaryColor: primaryColor,
