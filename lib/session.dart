@@ -8,8 +8,10 @@ class Session {
   List<Movement> _movements;
 
   Session(this.file, {bool empty = true, String unit = 'lbs'}) {
+    unit ??= 'lbs';
+
     if (empty) {
-      file.writeAsString('@ $defaultDateString\n# unit: $unit\n\n');
+      file.writeAsStringSync('@ $defaultDateString\n# unit: $unit\n\n');
     }
   }
 
