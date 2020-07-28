@@ -59,7 +59,11 @@ class _Transponder extends State<Transponder> {
     setState(() {
       _appData = directory;
       if (files.isNotEmpty) {
-        files.forEach((file) => _sessions.add(Session(file, empty: false)));
+        files.forEach((file) {
+          if (file is File) {
+            _sessions.add(Session(file, empty: false));
+          }
+        });
       }
       _sessions.sort((a, b) => b.filename.compareTo(a.filename));
     });
