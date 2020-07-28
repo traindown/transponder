@@ -1,4 +1,4 @@
-package com.example.transponder
+package com.greaterscott.transponder
 
 import io.flutter.embedding.android.FlutterActivity
 
