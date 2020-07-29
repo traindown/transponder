@@ -44,7 +44,7 @@ class SettingsState extends State<Settings> {
                 // TODO: Constantize the keys
                 initialValue:
                     widget.sharedPreferences.getString('defaultUnit') ??
-                        'fucks',
+                        'lbs',
                 onSaved: (String value) {
                   if (value == null || value.isEmpty) {
                     value = 'lbs';
