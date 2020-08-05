@@ -67,38 +67,45 @@ class _TraindownEditor extends State<TraindownEditor> {
           alignment: MainAxisAlignment.center,
           buttonHeight: 10.0,
           buttonMinWidth: 10.0,
-          buttonPadding: EdgeInsets.all(1.0),
+          buttonPadding: EdgeInsets.all(0.0),
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             FlatButton(
               child: Text('#', style: TextStyle(fontSize: 20.0)),
               onPressed: () => _addText('# '),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
             FlatButton(
               child: Text('*', style: TextStyle(fontSize: 24.0)),
               onPressed: () => _addText('* '),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
             FlatButton(
               child: Text(':',
                   style:
                       TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
               onPressed: () => _addText(': '),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
             FlatButton(
               child: Text('+', style: TextStyle(fontSize: 20.0)),
               onPressed: () => _addText('+ '),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
             FlatButton(
               child: Text('r', style: TextStyle(fontSize: 20.0)),
               onPressed: () => _addText('r '),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
             FlatButton(
               child: Text('s', style: TextStyle(fontSize: 20.0)),
               onPressed: () => _addText('s '),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
             FlatButton(
               child: Icon(Icons.photo_filter),
               onPressed: () => _formatText(),
+              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
             ),
           ],
         ));
