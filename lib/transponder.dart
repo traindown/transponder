@@ -128,12 +128,18 @@ class _Transponder extends State<Transponder> {
                 .map((e) => e.trim())
                 .toList();
     String subject = session.name;
-    final Email email = Email(
-      body: body,
-      subject: subject,
-      recipients: recipients,
-      attachmentPaths: [session.file.path],
-    );
+    final Email email = Platform.isIOS
+        ? Email(
+            body: body,
+            subject: subject,
+            recipients: recipients,
+            attachmentPaths: [session.file.path],
+          )
+        : Email(
+            body: body,
+            subject: subject,
+            recipients: recipients,
+          );
 
     String sendResponse;
 
