@@ -117,6 +117,7 @@ class _TraindownEditor extends State<TraindownEditor> {
           15.0, 0.0, 15.0, (MediaQuery.of(context).viewInsets.bottom) + 50.0),
       child: EditableText(
         autocorrect: true,
+        autocorrectionTextRectColor: Colors.blue[100],
         autofocus: true,
         backgroundCursorColor: Colors.blue,
         cursorColor: Colors.red,
