@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 
 import 'package:traindown/traindown.dart';
 
-class Session {
+class TTSession {
   File file;
   List<Movement> _movements;
 
-  Session(this.file, {bool empty = true, String unit = 'lbs'}) {
+  TTSession(this.file, {bool empty = true, String unit = 'lbs'}) {
     unit ??= 'lbs';
 
     if (empty) {
@@ -17,7 +17,7 @@ class Session {
 
   final String defaultSessionName = 'Traindown Session';
 
-  Session flushCache() {
+  TTSession flushCache() {
     _movements = null;
     return this;
   }
@@ -62,16 +62,17 @@ class Session {
   List<Movement> get movements {
     if (_movements != null) return _movements;
 
-    Parser parser = Parser.for_file(file.path);
+    String content = file.readAsStringSync();
+    Parser parser = Parser(content);
+    Session session;
     try {
-      parser.call();
+      session = Session(parser.tokens());
+      _movements = session.movements;
+
+      return _movements;
     } catch (_) {
       return [];
     }
-
-    _movements = parser.movements;
-
-    return _movements;
   }
 
   String get name {
@@ -88,17 +89,17 @@ class Session {
 
   int get repCount {
     return movements.fold(0, (ms, m) {
-      return ms + m.performances.fold(0, (ps, p) => ps + (p.repeat * p.reps));
+      return ms + m.performances.fold(0, (ps, p) => ps + (p.sets * p.reps));
     });
   }
 
   int get setCount {
     return movements.fold(0, (ms, m) {
-      return ms + m.performances.fold(0, (ps, p) => ps + p.repeat);
+      return ms + m.performances.fold(0, (ps, p) => ps + p.sets);
     });
   }
 
-  int get volume => movements.fold(0, (acc, cur) => acc + cur.volume);
+  double get volume => movements.fold(0, (acc, cur) => acc + cur.volume);
 
   String get volumeString => NumberFormat.decimalPattern().format(volume);
 }

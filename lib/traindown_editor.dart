@@ -18,6 +18,7 @@ class TraindownEditor extends StatefulWidget {
 
 class _TraindownEditor extends State<TraindownEditor> {
   TextEditingController _controller;
+  final Formatter formatter = Formatter();
 
   @override
   void initState() {
@@ -43,9 +44,8 @@ class _TraindownEditor extends State<TraindownEditor> {
   }
 
   void _formatText() {
-    Formatter formatter = Formatter.for_string(_controller.text);
-    formatter.format();
-    String text = formatter.output.toString();
+    Parser parser = Parser(_controller.text);
+    String text = formatter.format(parser.tokens());
 
     _controller.value = _controller.value.copyWith(
         text: text, selection: TextSelection.collapsed(offset: text.length));

@@ -9,19 +9,17 @@ import 'note.dart';
 
 class TraindownViewer extends StatelessWidget {
   final String content;
-  final Parser parser;
+  Parser parser;
+  Session session;
   final ScrollController scrollController;
 
   TraindownViewer({Key key, this.content, this.scrollController})
-      : parser = Parser.for_string(content),
-        super(key: key) {
-    // TODO: Make this better
-    try {
-      parser.call();
-    } catch (e) {}
+      : super(key: key) {
+    parser = Parser(content);
+    session = Session(parser.tokens());
   }
 
-  List<Movement> get movements => parser.movements;
+  List<Movement> get movements => session.movements;
 
   Widget renderKvps(BuildContext context, Map<String, String> kvps,
       {leftPad = 15.0}) {
@@ -146,7 +144,7 @@ class TraindownViewer extends StatelessWidget {
                 ),
                 textAlign: TextAlign.left)),
         Expanded(
-            child: Text(p.repeat.toString(),
+            child: Text(p.sets.toString(),
                 style: Theme.of(context).textTheme.bodyText1,
                 textAlign: TextAlign.left))
       ]));
@@ -163,7 +161,8 @@ class TraindownViewer extends StatelessWidget {
     return Column(children: rows);
   }
 
-  String get occurred => DateFormat.yMMMMEEEEd('en_US').format(parser.occurred);
+  String get occurred =>
+      DateFormat.yMMMMEEEEd('en_US').format(session.occurred);
 
   @override
   Widget build(BuildContext context) {
@@ -182,8 +181,8 @@ class TraindownViewer extends StatelessWidget {
                                 style: Theme.of(context).textTheme.headline1,
                                 textAlign: TextAlign.center))
                       ] +
-                      ([renderNotes(context, parser.metadata.notes)] +
-                              [renderKvps(context, parser.metadata.kvps)] +
+                      ([renderNotes(context, session.metadata.notes)] +
+                              [renderKvps(context, session.metadata.kvps)] +
                               movements
                                   .map((m) => renderMovement(context, m))
                                   .toList())

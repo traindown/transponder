@@ -14,9 +14,9 @@ import 'traindown_editor.dart';
 import 'traindown_viewer.dart';
 
 class _Transponder extends State<Transponder> {
-  Session _activeSession;
+  TTSession _activeSession;
   Directory _appData;
-  final List<Session> _sessions = [];
+  final List<TTSession> _sessions = [];
 
   String get _activeSessionContent {
     try {
@@ -31,7 +31,7 @@ class _Transponder extends State<Transponder> {
     File tmpFile = File(fullFilePath(tmpFilename));
     String content = _sessions[sessionIndex].file.readAsStringSync();
     tmpFile.writeAsStringSync(content);
-    Session session = Session(tmpFile, empty: false);
+    TTSession session = TTSession(tmpFile, empty: false);
     setState(() {
       _sessions.add(session);
       _activeSession = session;
@@ -41,7 +41,7 @@ class _Transponder extends State<Transponder> {
 
   Future<void> _createSession() async {
     String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
-    Session session = Session(File(fullFilePath(tmpFilename)),
+    TTSession session = TTSession(File(fullFilePath(tmpFilename)),
         unit: widget.sharedPreferences.getString('defaultUnit'));
     setState(() {
       _sessions.add(session);
@@ -61,7 +61,7 @@ class _Transponder extends State<Transponder> {
       if (files.isNotEmpty) {
         files.forEach((file) {
           if (file is File) {
-            _sessions.add(Session(file, empty: false));
+            _sessions.add(TTSession(file, empty: false));
           }
         });
       }
@@ -117,7 +117,7 @@ class _Transponder extends State<Transponder> {
   }
 
   Future<void> _sendEmail(int sessionIndex) async {
-    Session session = _sessions[sessionIndex];
+    TTSession session = _sessions[sessionIndex];
     String body = session.file.readAsStringSync();
     List<String> recipients =
         widget.sharedPreferences.getString('sendToEmails') == null

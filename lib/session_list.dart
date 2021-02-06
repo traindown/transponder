@@ -7,7 +7,7 @@ import 'traindown_info.dart';
 enum SessionMenuOption { copy, delete, edit, email }
 
 class SessionList extends StatelessWidget {
-  final List<Session> sessions;
+  final List<TTSession> sessions;
   final ValueChanged<int> onCopy;
   final ValueChanged<int> onDelete;
   final ValueChanged<int> onEmail;
@@ -41,7 +41,7 @@ class SessionList extends StatelessWidget {
         child: ListView.builder(
             itemCount: sessions.length,
             itemBuilder: (context, index) {
-              Session session = sessions[index];
+              TTSession session = sessions[index];
 
               return Card(
                   child: InkWell(
