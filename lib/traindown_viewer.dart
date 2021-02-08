@@ -161,8 +161,9 @@ class TraindownViewer extends StatelessWidget {
     return Column(children: rows);
   }
 
-  String get occurred =>
-      DateFormat.yMMMMEEEEd('en_US').format(session.occurred);
+  String get occurred {
+    return DateFormat.yMMMMEEEEd('en_US').format(session.occurred);
+  }
 
   @override
   Widget build(BuildContext context) {

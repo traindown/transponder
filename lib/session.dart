@@ -87,13 +87,13 @@ class TTSession {
     return DateFormat('E, LLLL d, y').format(date);
   }
 
-  int get repCount {
+  double get repCount {
     return movements.fold(0, (ms, m) {
       return ms + m.performances.fold(0, (ps, p) => ps + (p.sets * p.reps));
     });
   }
 
-  int get setCount {
+  double get setCount {
     return movements.fold(0, (ms, m) {
       return ms + m.performances.fold(0, (ps, p) => ps + p.sets);
     });
