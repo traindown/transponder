@@ -60,7 +60,7 @@ class _TraindownEditor extends State<TraindownEditor> {
 
   Widget buttonBar() {
     return Positioned(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: 0.0,
         left: 0.0,
         right: 0.0,
         child: ButtonBar(
@@ -113,8 +113,7 @@ class _TraindownEditor extends State<TraindownEditor> {
 
   Widget textArea() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-          15.0, 0.0, 15.0, (MediaQuery.of(context).viewInsets.bottom) + 50.0),
+      padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 50.0),
       child: EditableText(
         autocorrect: true,
         autocorrectionTextRectColor: Colors.blue[100],
