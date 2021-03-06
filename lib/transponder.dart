@@ -7,6 +7,8 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:traindown/traindown.dart';
+
 import 'session.dart';
 import 'session_list.dart';
 import 'settings.dart';
@@ -50,6 +52,11 @@ class _Transponder extends State<Transponder> {
     });
   }
 
+  Future<void> _filterSessions() async {
+    _showSessionsFilters();
+    //setState(() {});
+  }
+
   String fullFilePath(String filename) =>
       '${_appData.path}/$filename.traindown';
 
@@ -79,11 +86,26 @@ class _Transponder extends State<Transponder> {
     }
   }
 
+  Widget _renderActionBar() {
+    return Row(children: [
+      Expanded(child: _renderCreateSessionButton()),
+      Expanded(child: _renderFilterSessionsButton()),
+      Expanded(child: _renderSettingsButton())
+    ]);
+  }
+
   Widget _renderCreateSessionButton() {
     return FlatButton(
         textColor: Theme.of(context).primaryColor,
         child: Icon(Icons.add_circle_outline),
         onPressed: () => _createSession());
+  }
+
+  Widget _renderFilterSessionsButton() {
+    return FlatButton(
+        textColor: Theme.of(context).primaryColor,
+        child: Icon(Icons.filter_alt_outlined),
+        onPressed: () => _filterSessions());
   }
 
   Widget _renderSessionList() {
@@ -107,13 +129,6 @@ class _Transponder extends State<Transponder> {
         textColor: Theme.of(context).primaryColor,
         child: Icon(Icons.settings),
         onPressed: () => _showSettings());
-  }
-
-  Widget _renderTopBar() {
-    return Row(children: [
-      Expanded(child: _renderCreateSessionButton()),
-      Expanded(child: _renderSettingsButton())
-    ]);
   }
 
   Future<void> _sendEmail(int sessionIndex) async {
@@ -264,6 +279,55 @@ class _Transponder extends State<Transponder> {
     ).whenComplete(() => _syncFilenameToContent());
   }
 
+  void _showSessionsFilters() {
+    List<Session> sessions = _sessions.map((s) => s.session).toList();
+    Inspector inspector = Inspector(sessions);
+    Map<String, Set<String>> metadata = inspector.metadataByKey();
+    List<String> keys = metadata.keys.toList()..sort();
+
+    Widget filters = ListView.separated(
+        separatorBuilder: (context, index) => Divider(color: Colors.grey),
+        itemCount: keys.length,
+        itemBuilder: (context, index) {
+          String key = keys[index];
+          Set<String> values = metadata[key];
+
+          List<Widget> valueChecks = [];
+          for (String value in values) {
+            valueChecks.add(Row(children: [
+              Checkbox(
+                  value: true,
+                  onChanged: (bool value) {
+                    print(value);
+                  }),
+              Text(value),
+            ]));
+          }
+
+          return Column(children: [
+            Row(children: [
+              Text.rich(TextSpan(
+                  text: key, style: Theme.of(context).textTheme.headline3))
+            ]),
+            Row(children: valueChecks)
+          ]);
+        });
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: filters,
+            padding: EdgeInsets.only(top: 20.0));
+      },
+    );
+  }
+
   void _showSessionViewer() {
     showModalBottomSheet<void>(
       context: context,
@@ -346,7 +410,7 @@ class _Transponder extends State<Transponder> {
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[_renderTopBar(), _renderSessionList()])));
+                children: <Widget>[_renderSessionList(), _renderActionBar()])));
   }
 }
 

@@ -6,6 +6,7 @@ import 'package:traindown/traindown.dart';
 class TTSession {
   File file;
   List<Movement> _movements;
+  Session _session;
 
   TTSession(this.file, {bool empty = true, String unit = 'lbs'}) {
     unit ??= 'lbs';
@@ -62,13 +63,8 @@ class TTSession {
   List<Movement> get movements {
     if (_movements != null) return _movements;
 
-    String content = file.readAsStringSync();
-    Parser parser = Parser(content);
-    Session session;
     try {
-      session = Session(parser.tokens());
       _movements = session.movements;
-
       return _movements;
     } catch (_) {
       return [];
@@ -91,6 +87,16 @@ class TTSession {
     return movements.fold(0, (ms, m) {
       return ms + m.performances.fold(0, (ps, p) => ps + (p.sets * p.reps));
     });
+  }
+
+  // NOTE: This may raise.
+  Session get session {
+    if (_session != null) return _session;
+
+    String content = file.readAsStringSync();
+    Parser parser = Parser(content);
+    _session = Session(parser.tokens());
+    return _session;
   }
 
   double get setCount {
