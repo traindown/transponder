@@ -18,4 +18,5 @@ I have toyed around with the Desktop builds but haven't committed to it yet.
 
 ## Questions, comments, feature requests, etc
 
-Please feel free to [file an issue](/issues) or better yet, create a [pull request](/pulls)!
+Please feel free to [file an issue](https://github.com/traindown/transponder/issues)
+or better yet, create a [pull request](https://github.com/traindown/transponder/pulls)!
