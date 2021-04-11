@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,11 +29,20 @@ class _Transponder extends State<Transponder> {
     }
   }
 
+  // TODO: All this needs to be cleaned up!
   Future<void> _copySession(int sessionIndex) async {
     String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
     File tmpFile = File(fullFilePath(tmpFilename));
     String content = _sessions[sessionIndex].file.readAsStringSync();
-    tmpFile.writeAsStringSync(content);
+    Parser parser = Parser(content);
+    List<Token> tokens = parser.tokens().map((Token token) {
+      if (token.tokenType != TokenType.DateTime) return token;
+
+      return Token(
+          TokenType.DateTime, DateFormat('yyyy-MM-dd').format(DateTime.now()));
+    }).toList();
+    Formatter formatter = Formatter();
+    tmpFile.writeAsStringSync(formatter.format(tokens));
     TTSession session = TTSession(tmpFile, empty: false);
     setState(() {
       _sessions.add(session);
@@ -264,9 +274,9 @@ class _Transponder extends State<Transponder> {
       ),
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.85,
-            minChildSize: 0.85,
+            expand: true,
+            initialChildSize: 1,
+            minChildSize: 1,
             builder: (_, controller) {
               return Container(
                   child: TraindownEditor(
@@ -337,9 +347,9 @@ class _Transponder extends State<Transponder> {
       ),
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.85,
-            minChildSize: 0.85,
+            expand: true,
+            initialChildSize: 1,
+            minChildSize: 1,
             builder: (_, controller) {
               return Container(
                   child: TraindownViewer(
