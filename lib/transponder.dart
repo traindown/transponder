@@ -289,39 +289,12 @@ class _Transponder extends State<Transponder> {
     ).whenComplete(() => _syncFilenameToContent());
   }
 
+  // TODO: Pull into own widget
   void _showSessionsFilters() {
     List<Session> sessions = _sessions.map((s) => s.session).toList();
     Inspector inspector = Inspector(sessions);
     Map<String, Set<String>> metadata = inspector.metadataByKey();
     List<String> keys = metadata.keys.toList()..sort();
-
-    Widget filters = ListView.separated(
-        separatorBuilder: (context, index) => Divider(color: Colors.grey),
-        itemCount: keys.length,
-        itemBuilder: (context, index) {
-          String key = keys[index];
-          Set<String> values = metadata[key];
-
-          List<Widget> valueChecks = [];
-          for (String value in values) {
-            valueChecks.add(Row(children: [
-              Checkbox(
-                  value: true,
-                  onChanged: (bool value) {
-                    print(value);
-                  }),
-              Text(value),
-            ]));
-          }
-
-          return Column(children: [
-            Row(children: [
-              Text.rich(TextSpan(
-                  text: key, style: Theme.of(context).textTheme.headline3))
-            ]),
-            Row(children: valueChecks)
-          ]);
-        });
 
     showModalBottomSheet<void>(
       context: context,
@@ -330,10 +303,44 @@ class _Transponder extends State<Transponder> {
         borderRadius: BorderRadius.circular(10.0),
       ),
       builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: filters,
-            padding: EdgeInsets.only(top: 20.0));
+        return DraggableScrollableSheet(
+            expand: true,
+            initialChildSize: 1,
+            minChildSize: 1,
+            builder: (_, controller) {
+              return Container(
+                  child: ListView.separated(
+                      controller: controller,
+                      separatorBuilder: (context, index) =>
+                          Divider(color: Colors.grey),
+                      itemCount: keys.length,
+                      itemBuilder: (context, index) {
+                        String key = keys[index];
+                        Set<String> values = metadata[key];
+
+                        List<Widget> valueChecks = [];
+                        for (String value in values) {
+                          valueChecks.add(Row(children: [
+                            Checkbox(
+                                value: true,
+                                onChanged: (bool value) {
+                                  print(value);
+                                }),
+                            Text(value),
+                          ]));
+                        }
+
+                        return Column(children: [
+                          Row(children: [
+                            Text.rich(TextSpan(
+                                text: key,
+                                style: Theme.of(context).textTheme.headline3))
+                          ]),
+                          Row(children: valueChecks)
+                        ]);
+                      }),
+                  padding: EdgeInsets.only(top: 20.0));
+            });
       },
     );
   }
@@ -369,10 +376,15 @@ class _Transponder extends State<Transponder> {
         borderRadius: BorderRadius.circular(10.0),
       ),
       builder: (BuildContext context) {
-        return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: Settings(sharedPreferences: widget.sharedPreferences),
-            padding: EdgeInsets.only(top: 20.0));
+        return DraggableScrollableSheet(
+            expand: true,
+            initialChildSize: 1,
+            minChildSize: 1,
+            builder: (_, controller) {
+              return Container(
+                  child: Settings(sharedPreferences: widget.sharedPreferences),
+                  padding: EdgeInsets.only(top: 20.0));
+            });
       },
     );
   }
