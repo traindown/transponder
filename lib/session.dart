@@ -7,6 +7,7 @@ class TTSession {
   File file;
   List<Movement> _movements;
   Session _session;
+  bool errored = false;
 
   TTSession(this.file, {bool empty = true, String unit = 'lbs'}) {
     unit ??= 'lbs';
@@ -96,7 +97,14 @@ class TTSession {
 
     String content = file.readAsStringSync();
     Parser parser = Parser(content);
-    _session = Session(parser.tokens());
+
+    try {
+      _session = Session(parser.tokens());
+      errored = false;
+    } catch (e) {
+      errored = true;
+    }
+
     return _session;
   }
 

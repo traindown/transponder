@@ -291,7 +291,8 @@ class _Transponder extends State<Transponder> {
 
   // TODO: Pull into own widget
   void _showSessionsFilters() {
-    List<Session> rawSessions = _sessions.map((s) => s.session).toList();
+    List<Session> rawSessions =
+        _sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
     Map<String, Set<String>> metadata = inspector.metadataByKey();
     List<String> keys = metadata.keys.toList()..sort();
@@ -324,7 +325,7 @@ class _Transponder extends State<Transponder> {
                           for (String value in values) {
                             String filterString = '$key:$value';
 
-                            valueChecks.add(Row(children: [
+                            valueChecks.add(Column(children: [
                               Checkbox(
                                   value: _filterList.contains(filterString),
                                   onChanged: (bool checkedValue) {
@@ -350,7 +351,7 @@ class _Transponder extends State<Transponder> {
                                           .textTheme
                                           .headline6)))
                             ]),
-                            Row(children: valueChecks)
+                            Wrap(children: valueChecks)
                           ]);
                         }),
                     padding: EdgeInsets.only(top: 20.0));
@@ -436,7 +437,8 @@ class _Transponder extends State<Transponder> {
       _activeSession.file.writeAsString(content);
 
   List<TTSession> get sessions {
-    List<Session> sessions = _sessions.map((s) => s.session).toList();
+    List<Session> sessions =
+        _sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(sessions);
 
     Map<String, String> filters = {};
