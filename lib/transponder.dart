@@ -342,9 +342,13 @@ class _Transponder extends State<Transponder> {
 
                           return Column(children: [
                             Row(children: [
-                              Text.rich(TextSpan(
-                                  text: key,
-                                  style: Theme.of(context).textTheme.headline3))
+                              Container(
+                                  padding: EdgeInsets.only(left: 15.0),
+                                  child: Text.rich(TextSpan(
+                                      text: key,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6)))
                             ]),
                             Row(children: valueChecks)
                           ]);
