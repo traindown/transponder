@@ -8,11 +8,11 @@ enum SessionMenuOption { copy, delete, edit, email }
 
 class SessionList extends StatelessWidget {
   final List<TTSession> sessions;
-  final ValueChanged<int> onCopy;
-  final ValueChanged<int> onDelete;
-  final ValueChanged<int> onEmail;
-  final ValueChanged<int> onEdit;
-  final ValueChanged<int> onView;
+  final ValueChanged<String> onCopy;
+  final ValueChanged<String> onDelete;
+  final ValueChanged<String> onEmail;
+  final ValueChanged<String> onEdit;
+  final ValueChanged<String> onView;
 
   SessionList(
       {Key key,
@@ -30,7 +30,7 @@ class SessionList extends StatelessWidget {
       Text(amount,
           style: Theme.of(context)
               .textTheme
-              .headline6
+              .bodyText1
               .copyWith(color: Theme.of(context).accentColor)),
       Text(label, style: TextStyle(color: Colors.grey))
     ]));
@@ -46,15 +46,15 @@ class SessionList extends StatelessWidget {
               return Card(
                   child: InkWell(
                       splashColor: Colors.blue.withAlpha(30),
-                      onTap: () => onView(index),
+                      onTap: () => onView(session.filename),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(15.0, 0, 15.0, 10.0),
                         child: Column(children: [
                           ListTile(
                             contentPadding: EdgeInsets.all(0.0),
-                            onTap: () => onView(index),
+                            onTap: () => onView(session.filename),
                             title: Text(session.name,
-                                style: Theme.of(context).textTheme.headline5),
+                                style: Theme.of(context).textTheme.headline6),
                             trailing:
                                 Row(mainAxisSize: MainAxisSize.min, children: [
                               PopupMenuButton<SessionMenuOption>(
@@ -66,16 +66,16 @@ class SessionList extends StatelessWidget {
                                   onSelected: (SessionMenuOption action) {
                                     switch (action) {
                                       case SessionMenuOption.copy:
-                                        onCopy(index);
+                                        onCopy(session.filename);
                                         break;
                                       case SessionMenuOption.delete:
-                                        onDelete(index);
+                                        onDelete(session.filename);
                                         break;
                                       case SessionMenuOption.edit:
-                                        onEdit(index);
+                                        onEdit(session.filename);
                                         break;
                                       case SessionMenuOption.email:
-                                        onEmail(index);
+                                        onEmail(session.filename);
                                         break;
                                     }
                                   },
@@ -116,8 +116,12 @@ class SessionList extends StatelessWidget {
                                   alignment: Alignment.centerLeft,
                                   child: Wrap(children: [
                                     Text(session.liftsSentence,
-                                        style:
-                                            Theme.of(context).textTheme.caption)
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyText2
+                                            .copyWith(
+                                                color: Theme.of(context)
+                                                    .hintColor)),
                                   ]))),
                           Row(children: [
                             metric(context, session.volumeString, 'volume'),

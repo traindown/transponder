@@ -18,8 +18,9 @@ class TTSession {
 
   final String defaultSessionName = 'Traindown Session';
 
-  TTSession flushCache() {
+  TTSession refresh() {
     _movements = null;
+    _session = null;
     return this;
   }
 

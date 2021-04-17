@@ -19,6 +19,8 @@ import 'traindown_viewer.dart';
 class _Transponder extends State<Transponder> {
   TTSession _activeSession;
   Directory _appData;
+
+  final Set<String> _filterList = <String>{};
   final List<TTSession> _sessions = [];
 
   String get _activeSessionContent {
@@ -30,10 +32,10 @@ class _Transponder extends State<Transponder> {
   }
 
   // TODO: All this needs to be cleaned up!
-  Future<void> _copySession(int sessionIndex) async {
+  Future<void> _copySession(String filename) async {
     String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
     File tmpFile = File(fullFilePath(tmpFilename));
-    String content = _sessions[sessionIndex].file.readAsStringSync();
+    String content = fetchSession(filename).file.readAsStringSync();
     Parser parser = Parser(content);
     List<Token> tokens = parser.tokens().map((Token token) {
       if (token.tokenType != TokenType.DateTime) return token;
@@ -62,10 +64,7 @@ class _Transponder extends State<Transponder> {
     });
   }
 
-  Future<void> _filterSessions() async {
-    _showSessionsFilters();
-    //setState(() {});
-  }
+  Future<void> _filterSessions() async => _showSessionsFilters();
 
   String fullFilePath(String filename) =>
       '${_appData.path}/$filename.traindown';
@@ -82,7 +81,6 @@ class _Transponder extends State<Transponder> {
           }
         });
       }
-      _sessions.sort((a, b) => b.filename.compareTo(a.filename));
     });
   }
 
@@ -120,16 +118,16 @@ class _Transponder extends State<Transponder> {
 
   Widget _renderSessionList() {
     return SessionList(
-        sessions: _sessions,
-        onCopy: (index) => _copySession(index),
-        onDelete: (index) => _showDeleteModal(index),
-        onEmail: (index) => _sendEmail(index),
-        onEdit: (index) {
-          _activeSession = _sessions[index];
+        sessions: sessions,
+        onCopy: (filename) => _copySession(filename),
+        onDelete: (filename) => _showDeleteModal(filename),
+        onEmail: (filename) => _sendEmail(filename),
+        onEdit: (filename) {
+          _activeSession = fetchSession(filename);
           _showSessionEditor();
         },
-        onView: (index) {
-          _activeSession = _sessions[index];
+        onView: (filename) {
+          _activeSession = fetchSession(filename);
           _showSessionViewer();
         });
   }
@@ -141,8 +139,8 @@ class _Transponder extends State<Transponder> {
         onPressed: () => _showSettings());
   }
 
-  Future<void> _sendEmail(int sessionIndex) async {
-    TTSession session = _sessions[sessionIndex];
+  Future<void> _sendEmail(String filename) async {
+    TTSession session = fetchSession(filename);
     String body = session.file.readAsStringSync();
     List<String> recipients =
         widget.sharedPreferences.getString('sendToEmails') == null
@@ -200,46 +198,48 @@ class _Transponder extends State<Transponder> {
     }
   }
 
-  Future<void> _showDeleteModal(int sessionIndex) async {
+  Future<void> _showDeleteModal(String filename) async {
+    TTSession session = fetchSession(filename);
+
     return showCupertinoDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Delete ${_sessions[sessionIndex].name}?'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Deleting this session will permanently remove its data.'),
-              ],
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text('Delete ${session.name}?'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                      'Deleting this session will permanently remove its data.'),
+                ],
+              ),
             ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              textColor: Colors.blue,
-              child: Text('Cancel', style: TextStyle(fontSize: 16.0)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            FlatButton(
-              textColor: Colors.red,
-              child: Text('Delete',
-                  style:
-                      TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                if (_sessions[sessionIndex].teardown()) {
-                  setState(() => _sessions.removeAt(sessionIndex));
+            actions: <Widget>[
+              FlatButton(
+                textColor: Colors.blue,
+                child: Text('Cancel', style: TextStyle(fontSize: 16.0)),
+                onPressed: () {
                   Navigator.of(context).pop();
-                } else {
-                  Navigator.of(context).pop();
-                  _showErrorModal('Could not delete session');
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
+                },
+              ),
+              FlatButton(
+                textColor: Colors.red,
+                child: Text('Delete',
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  if (session.teardown()) {
+                    setState(() => _sessions.removeWhere((s) => s == session));
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pop();
+                    _showErrorModal('Could not delete session');
+                  }
+                },
+              ),
+            ],
+          );
+        }).whenComplete(() => setState(() {}));
   }
 
   Future<void> _showErrorModal(String message) async {
@@ -291,8 +291,8 @@ class _Transponder extends State<Transponder> {
 
   // TODO: Pull into own widget
   void _showSessionsFilters() {
-    List<Session> sessions = _sessions.map((s) => s.session).toList();
-    Inspector inspector = Inspector(sessions);
+    List<Session> rawSessions = _sessions.map((s) => s.session).toList();
+    Inspector inspector = Inspector(rawSessions);
     Map<String, Set<String>> metadata = inspector.metadataByKey();
     List<String> keys = metadata.keys.toList()..sort();
 
@@ -303,46 +303,57 @@ class _Transponder extends State<Transponder> {
         borderRadius: BorderRadius.circular(10.0),
       ),
       builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-            expand: true,
-            initialChildSize: 1,
-            minChildSize: 1,
-            builder: (_, controller) {
-              return Container(
-                  child: ListView.separated(
-                      controller: controller,
-                      separatorBuilder: (context, index) =>
-                          Divider(color: Colors.grey),
-                      itemCount: keys.length,
-                      itemBuilder: (context, index) {
-                        String key = keys[index];
-                        Set<String> values = metadata[key];
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return DraggableScrollableSheet(
+              expand: true,
+              initialChildSize: 1,
+              minChildSize: 1,
+              builder: (_, controller) {
+                return Container(
+                    child: ListView.separated(
+                        controller: controller,
+                        separatorBuilder: (context, index) =>
+                            Divider(color: Colors.grey),
+                        itemCount: keys.length,
+                        itemBuilder: (context, index) {
+                          String key = keys[index];
+                          Set<String> values = metadata[key];
 
-                        List<Widget> valueChecks = [];
-                        for (String value in values) {
-                          valueChecks.add(Row(children: [
-                            Checkbox(
-                                value: true,
-                                onChanged: (bool value) {
-                                  print(value);
-                                }),
-                            Text(value),
-                          ]));
-                        }
+                          List<Widget> valueChecks = [];
+                          for (String value in values) {
+                            String filterString = '$key:$value';
 
-                        return Column(children: [
-                          Row(children: [
-                            Text.rich(TextSpan(
-                                text: key,
-                                style: Theme.of(context).textTheme.headline3))
-                          ]),
-                          Row(children: valueChecks)
-                        ]);
-                      }),
-                  padding: EdgeInsets.only(top: 20.0));
-            });
+                            valueChecks.add(Row(children: [
+                              Checkbox(
+                                  value: _filterList.contains(filterString),
+                                  onChanged: (bool checkedValue) {
+                                    setState(() {
+                                      if (checkedValue) {
+                                        _filterList.add(filterString);
+                                      } else {
+                                        _filterList.remove(filterString);
+                                      }
+                                    });
+                                  }),
+                              Text(value),
+                            ]));
+                          }
+
+                          return Column(children: [
+                            Row(children: [
+                              Text.rich(TextSpan(
+                                  text: key,
+                                  style: Theme.of(context).textTheme.headline3))
+                            ]),
+                            Row(children: valueChecks)
+                          ]);
+                        }),
+                    padding: EdgeInsets.only(top: 20.0));
+              });
+        });
       },
-    );
+    ).whenComplete(() => setState(() {}));
   }
 
   void _showSessionViewer() {
@@ -406,16 +417,36 @@ class _Transponder extends State<Transponder> {
       setState(() {
         _activeSession.file =
             moveFile(_activeSession.file, fullFilePath(possibleFilename));
-        _sessions.sort((a, b) => b.filename.compareTo(a.filename));
       });
     }
 
     // NOTE: This just kicks the getters for _activeSession
-    setState(() => _activeSession = _activeSession.flushCache());
+    setState(() => _activeSession = _activeSession.refresh());
+  }
+
+  TTSession fetchSession(String filename) {
+    return _sessions.where((s) => s.filename == filename).first;
   }
 
   void _writeSession(String content) =>
       _activeSession.file.writeAsString(content);
+
+  List<TTSession> get sessions {
+    List<Session> sessions = _sessions.map((s) => s.session).toList();
+    Inspector inspector = Inspector(sessions);
+
+    Map<String, String> filters = {};
+    _filterList.forEach((String filterString) {
+      List<String> kvp = filterString.split(':');
+      filters[kvp[0]] = kvp[1];
+    });
+
+    List<Session> matchedSessions = inspector.sessionQuery(metaLike: filters);
+    List<TTSession> result =
+        _sessions.where((s) => matchedSessions.contains(s.session)).toList();
+    result.sort((a, b) => b.filename.compareTo(a.filename));
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -439,7 +470,7 @@ class _Transponder extends State<Transponder> {
 class Transponder extends StatefulWidget {
   final SharedPreferences sharedPreferences;
 
-  const Transponder({Key key, @required this.sharedPreferences})
+  Transponder({Key key, @required this.sharedPreferences})
       : assert(sharedPreferences != null),
         super(key: key);
 
