@@ -312,6 +312,7 @@ class _Transponder extends State<Transponder> {
               minChildSize: 0.99,
               builder: (_, controller) {
                 return Container(
+                    padding: EdgeInsets.only(top: 20.0),
                     child: ListView.separated(
                         controller: controller,
                         separatorBuilder: (context, index) =>
@@ -319,7 +320,8 @@ class _Transponder extends State<Transponder> {
                         itemCount: keys.length,
                         itemBuilder: (context, index) {
                           String key = keys[index];
-                          Set<String> values = metadata[key];
+                          List<String> values = metadata[key].toList();
+                          values.sort((a, b) => a.compareTo(b));
 
                           List<Widget> valueChecks = [];
                           for (String value in values) {
@@ -353,8 +355,7 @@ class _Transponder extends State<Transponder> {
                             ]),
                             Wrap(spacing: 8.0, children: valueChecks)
                           ]);
-                        }),
-                    padding: EdgeInsets.only(top: 20.0));
+                        }));
               });
         });
       },
