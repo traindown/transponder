@@ -276,7 +276,7 @@ class _Transponder extends State<Transponder> {
         return DraggableScrollableSheet(
             expand: true,
             initialChildSize: 1,
-            minChildSize: 1,
+            minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
                   child: TraindownEditor(
@@ -309,7 +309,7 @@ class _Transponder extends State<Transponder> {
           return DraggableScrollableSheet(
               expand: true,
               initialChildSize: 1,
-              minChildSize: 1,
+              minChildSize: 0.99,
               builder: (_, controller) {
                 return Container(
                     child: ListView.separated(
@@ -351,7 +351,7 @@ class _Transponder extends State<Transponder> {
                                           .textTheme
                                           .headline6)))
                             ]),
-                            Wrap(children: valueChecks)
+                            Wrap(spacing: 8.0, children: valueChecks)
                           ]);
                         }),
                     padding: EdgeInsets.only(top: 20.0));
@@ -372,7 +372,7 @@ class _Transponder extends State<Transponder> {
         return DraggableScrollableSheet(
             expand: true,
             initialChildSize: 1,
-            minChildSize: 1,
+            minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
                   child: TraindownViewer(
@@ -395,7 +395,7 @@ class _Transponder extends State<Transponder> {
         return DraggableScrollableSheet(
             expand: true,
             initialChildSize: 1,
-            minChildSize: 1,
+            minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
                   child: Settings(sharedPreferences: widget.sharedPreferences),
