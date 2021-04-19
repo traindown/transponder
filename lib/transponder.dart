@@ -447,8 +447,10 @@ class _Transponder extends State<Transponder> {
       _activeSession.file.writeAsString(content);
 
   List<TTSession> get sessions {
-    List<Session> sessions =
-        _sessions.where((s) => !s.errored).map((s) => s.session).toList();
+    List<Session> sessions = _sessions
+        .where((s) => s.session != null && !s.errored)
+        .map((s) => s.session)
+        .toList();
     Inspector inspector = Inspector(sessions);
 
     Map<String, String> filters = {};

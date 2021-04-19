@@ -44,7 +44,9 @@ class SessionList extends StatelessWidget {
               TTSession session = sessions[index];
 
               return Card(
-                  color: session.errored ? Colors.red : Colors.white,
+                  color: session.errored
+                      ? Colors.red
+                      : Theme.of(context).cardColor,
                   child: InkWell(
                       splashColor: Colors.blue.withAlpha(30),
                       onTap: () => onView(session.filename),
