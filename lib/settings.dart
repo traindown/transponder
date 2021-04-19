@@ -8,8 +8,9 @@ import 'traindown_info.dart';
 // Create a Form widget.
 class Settings extends StatefulWidget {
   final SharedPreferences sharedPreferences;
+  final Function exportCallback;
 
-  Settings({Key key, @required this.sharedPreferences})
+  Settings({Key key, @required this.sharedPreferences, this.exportCallback})
       : assert(sharedPreferences != null),
         super(key: key);
 
@@ -23,7 +24,7 @@ class SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      autovalidate: true,
+      autovalidateMode: AutovalidateMode.always,
       onChanged: () {
         Form.of(primaryFocus.context).save();
       },
@@ -43,8 +44,7 @@ class SettingsState extends State<Settings> {
                 ),
                 // TODO: Constantize the keys
                 initialValue:
-                    widget.sharedPreferences.getString('defaultUnit') ??
-                        'lbs',
+                    widget.sharedPreferences.getString('defaultUnit') ?? 'lbs',
                 onSaved: (String value) {
                   if (value == null || value.isEmpty) {
                     value = 'lbs';
@@ -80,7 +80,10 @@ class SettingsState extends State<Settings> {
                   return null;
                 },
               ),
-              TraindownInfo()
+              TraindownInfo(),
+              OutlinedButton(
+                  onPressed: widget.exportCallback,
+                  child: Text('Export all data via email')),
             ],
           )),
     );

@@ -33,7 +33,7 @@ dependencies:
   intl:
   path_provider:
   shared_preferences: '>=0.5.8 <2.0.0'
-  traindown: ^2.3.1
+  traindown: ^2.4.0
   url_launcher: ^5.5.0
 
 dev_dependencies:

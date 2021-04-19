@@ -121,7 +121,7 @@ class _Transponder extends State<Transponder> {
         sessions: sessions,
         onCopy: (filename) => _copySession(filename),
         onDelete: (filename) => _showDeleteModal(filename),
-        onEmail: (filename) => _sendEmail(filename),
+        onEmail: (filename) => _sendEmail(session: fetchSession(filename)),
         onEdit: (filename) {
           _activeSession = fetchSession(filename);
           _showSessionEditor();
@@ -139,9 +139,15 @@ class _Transponder extends State<Transponder> {
         onPressed: () => _showSettings());
   }
 
-  Future<void> _sendEmail(String filename) async {
-    TTSession session = fetchSession(filename);
-    String body = session.file.readAsStringSync();
+  void _sendExportEmail() async {
+    List<Session> rawSessions =
+        _sessions.where((s) => !s.errored).map((s) => s.session).toList();
+    Inspector inspector = Inspector(rawSessions);
+
+    await _sendEmail(content: inspector.export());
+  }
+
+  Future<void> _sendEmail({String content, TTSession session}) async {
     List<String> recipients =
         widget.sharedPreferences.getString('sendToEmails') == null
             ? []
@@ -150,16 +156,17 @@ class _Transponder extends State<Transponder> {
                 .split(',')
                 .map((e) => e.trim())
                 .toList();
-    String subject = session.name;
+    // TODO: Make more specific subject.
+    String subject = session != null ? session.name : 'Traindown Export';
     final Email email = Platform.isIOS
         ? Email(
-            body: body,
+            body: session != null ? session.file.readAsStringSync() : content,
             subject: subject,
             recipients: recipients,
-            attachmentPaths: [session.file.path],
+            attachmentPaths: session != null ? [session.file.path] : [],
           )
         : Email(
-            body: body,
+            body: session != null ? session.file.readAsStringSync() : content,
             subject: subject,
             recipients: recipients,
           );
@@ -399,8 +406,10 @@ class _Transponder extends State<Transponder> {
             minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
-                  child: Settings(sharedPreferences: widget.sharedPreferences),
-                  padding: EdgeInsets.only(top: 20.0));
+                  padding: EdgeInsets.only(top: 20.0),
+                  child: Settings(
+                      sharedPreferences: widget.sharedPreferences,
+                      exportCallback: _sendExportEmail));
             });
       },
     );
