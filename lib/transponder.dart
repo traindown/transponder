@@ -103,16 +103,16 @@ class _Transponder extends State<Transponder> {
   }
 
   Widget _renderCreateSessionButton() {
-    return FlatButton(
-        textColor: Theme.of(context).primaryColor,
-        child: Icon(Icons.add_circle_outline),
+    return IconButton(
+        color: Theme.of(context).primaryColor,
+        icon: Icon(Icons.add_circle_outline),
         onPressed: () => _createSession());
   }
 
   Widget _renderFilterSessionsButton() {
-    return FlatButton(
-        textColor: Theme.of(context).primaryColor,
-        child: Icon(Icons.filter_alt_outlined),
+    return IconButton(
+        color: Theme.of(context).primaryColor,
+        icon: Icon(Icons.filter_alt_outlined),
         onPressed: () => _filterSessions());
   }
 
@@ -133,9 +133,9 @@ class _Transponder extends State<Transponder> {
   }
 
   Widget _renderSettingsButton() {
-    return FlatButton(
-        textColor: Theme.of(context).primaryColor,
-        child: Icon(Icons.settings),
+    return IconButton(
+        color: Theme.of(context).primaryColor,
+        icon: Icon(Icons.settings),
         onPressed: () => _showSettings());
   }
 
@@ -187,10 +187,11 @@ class _Transponder extends State<Transponder> {
             title: Text('Email Status'),
             content: Text(sendResponse),
             actions: <Widget>[
-              FlatButton(
-                textColor: Colors.blue,
-                child: Text('Okay'),
+              TextButton(
+                style: TextButton.styleFrom(
+                    primary: Theme.of(context).primaryColor),
                 onPressed: () => Navigator.of(context).pop(),
+                child: Text('Okay'),
               ),
             ],
           );
@@ -222,18 +223,15 @@ class _Transponder extends State<Transponder> {
               ),
             ),
             actions: <Widget>[
-              FlatButton(
-                textColor: Colors.blue,
+              TextButton(
+                style: TextButton.styleFrom(
+                    primary: Theme.of(context).primaryColor),
+                onPressed: () => Navigator.of(context).pop(),
                 child: Text('Cancel', style: TextStyle(fontSize: 16.0)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
               ),
-              FlatButton(
-                textColor: Colors.red,
-                child: Text('Delete',
-                    style:
-                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+              TextButton(
+                style: TextButton.styleFrom(
+                    primary: Theme.of(context).accentColor),
                 onPressed: () {
                   if (session.teardown()) {
                     setState(() => _sessions.removeWhere((s) => s == session));
@@ -243,6 +241,9 @@ class _Transponder extends State<Transponder> {
                     _showErrorModal('Could not delete session');
                   }
                 },
+                child: Text('Delete',
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -264,10 +265,11 @@ class _Transponder extends State<Transponder> {
                 ),
               ),
               actions: <Widget>[
-                FlatButton(
-                    textColor: Colors.blue,
-                    child: Text('Huh. Okay'),
-                    onPressed: () => Navigator.of(context).pop())
+                TextButton(
+                    style: TextButton.styleFrom(
+                        primary: Theme.of(context).primaryColor),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('Huh. Okay'))
               ]);
         });
   }
@@ -286,11 +288,11 @@ class _Transponder extends State<Transponder> {
             minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
+                  padding: EdgeInsets.only(top: 20.0),
                   child: TraindownEditor(
                       content: _activeSessionContent,
                       onChange: _writeSession,
-                      scrollController: controller),
-                  padding: EdgeInsets.only(top: 20.0));
+                      scrollController: controller));
             });
       },
     ).whenComplete(() => _syncFilenameToContent());
@@ -302,6 +304,9 @@ class _Transponder extends State<Transponder> {
         _sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
     Map<String, Set<String>> metadata = inspector.metadataByKey();
+
+    print(metadata);
+
     List<String> keys = metadata.keys.toList()..sort();
 
     showModalBottomSheet<void>(
@@ -383,10 +388,10 @@ class _Transponder extends State<Transponder> {
             minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
+                  padding: EdgeInsets.only(top: 20.0),
                   child: TraindownViewer(
                       content: _activeSessionContent,
-                      scrollController: controller),
-                  padding: EdgeInsets.only(top: 20.0));
+                      scrollController: controller));
             });
       },
     );
