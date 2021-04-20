@@ -34,7 +34,6 @@ class _TraindownEditor extends State<TraindownEditor> {
   }
 
   void _addText(String addition) {
-    //addition = addition.isEmpty ? '' : addition;
     int start = _controller.selection.extentOffset;
     int end = _controller.selection.extentOffset + addition.length;
     _controller.value = _controller.value.copyWith(
@@ -59,61 +58,47 @@ class _TraindownEditor extends State<TraindownEditor> {
   }
 
   Widget buttonBar() {
-    return Positioned(
-        bottom: 0.0,
-        left: 0.0,
-        right: 0.0,
-        child: ButtonBar(
-          alignment: MainAxisAlignment.center,
-          buttonHeight: 10.0,
-          buttonMinWidth: 10.0,
-          buttonPadding: EdgeInsets.all(0.0),
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            FlatButton(
-              child: Text('#', style: TextStyle(fontSize: 20.0)),
-              onPressed: () => _addText('# '),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-            FlatButton(
-              child: Text('*', style: TextStyle(fontSize: 24.0)),
-              onPressed: () => _addText('* '),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-            FlatButton(
-              child: Text(':',
-                  style:
-                      TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-              onPressed: () => _addText(': '),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-            FlatButton(
-              child: Text('+', style: TextStyle(fontSize: 20.0)),
-              onPressed: () => _addText('+ '),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-            FlatButton(
-              child: Text('r', style: TextStyle(fontSize: 20.0)),
-              onPressed: () => _addText('r '),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-            FlatButton(
-              child: Text('s', style: TextStyle(fontSize: 20.0)),
-              onPressed: () => _addText('s '),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-            FlatButton(
-              child: Icon(Icons.photo_filter),
-              onPressed: () => _formatText(),
-              padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0),
-            ),
-          ],
-        ));
+    return ButtonBar(
+      alignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.max,
+      overflowDirection: VerticalDirection.up,
+      children: <Widget>[
+        TextButton(
+          onPressed: () => _addText('# '),
+          child: Text('#', style: TextStyle(fontSize: 20.0)),
+        ),
+        TextButton(
+          onPressed: () => _addText('* '),
+          child: Text('*', style: TextStyle(fontSize: 24.0)),
+        ),
+        TextButton(
+          onPressed: () => _addText(': '),
+          child: Text(':',
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+        ),
+        TextButton(
+          onPressed: () => _addText('+ '),
+          child: Text('+', style: TextStyle(fontSize: 20.0)),
+        ),
+        TextButton(
+          onPressed: () => _addText('r '),
+          child: Text('r', style: TextStyle(fontSize: 20.0)),
+        ),
+        TextButton(
+          onPressed: () => _addText('s '),
+          child: Text('s', style: TextStyle(fontSize: 20.0)),
+        ),
+        TextButton(
+          onPressed: () => _formatText(),
+          child: Icon(Icons.photo_filter),
+        ),
+      ],
+    );
   }
 
   Widget textArea() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 50.0),
+      padding: EdgeInsets.fromLTRB(15.0, 0.0, 50.0, 0.0),
       child: EditableText(
         autocorrect: true,
         autocorrectionTextRectColor: Colors.blue[100],
@@ -126,10 +111,10 @@ class _TraindownEditor extends State<TraindownEditor> {
         enableSuggestions: true,
         expands: true,
         focusNode: FocusNode(),
-        onChanged: (String text) => _handleTextChange(text),
-        scrollController: widget.scrollController,
         keyboardType: TextInputType.multiline,
         maxLines: null,
+        onChanged: (String text) => _handleTextChange(text),
+        scrollController: widget.scrollController,
         style: Theme.of(context).textTheme.bodyText1,
       ),
     );
@@ -137,6 +122,8 @@ class _TraindownEditor extends State<TraindownEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: <Widget>[textArea(), buttonBar()]);
+    return Stack(
+        alignment: AlignmentDirectional.bottomEnd,
+        children: <Widget>[textArea(), buttonBar()]);
   }
 }
