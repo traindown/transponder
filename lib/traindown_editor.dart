@@ -58,47 +58,50 @@ class _TraindownEditor extends State<TraindownEditor> {
   }
 
   Widget buttonBar() {
-    return ButtonBar(
-      alignment: MainAxisAlignment.end,
-      mainAxisSize: MainAxisSize.max,
-      overflowDirection: VerticalDirection.up,
-      children: <Widget>[
-        TextButton(
-          onPressed: () => _addText('# '),
-          child: Text('#', style: TextStyle(fontSize: 20.0)),
-        ),
-        TextButton(
-          onPressed: () => _addText('* '),
-          child: Text('*', style: TextStyle(fontSize: 24.0)),
-        ),
-        TextButton(
-          onPressed: () => _addText(': '),
-          child: Text(':',
-              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-        ),
-        TextButton(
-          onPressed: () => _addText('+ '),
-          child: Text('+', style: TextStyle(fontSize: 20.0)),
-        ),
-        TextButton(
-          onPressed: () => _addText('r '),
-          child: Text('r', style: TextStyle(fontSize: 20.0)),
-        ),
-        TextButton(
-          onPressed: () => _addText('s '),
-          child: Text('s', style: TextStyle(fontSize: 20.0)),
-        ),
-        TextButton(
-          onPressed: () => _formatText(),
-          child: Icon(Icons.photo_filter),
-        ),
-      ],
-    );
+    return Positioned(
+        bottom: 0.0,
+        left: 0.0,
+        right: 0.0,
+        child: ButtonBar(
+          overflowDirection: VerticalDirection.up,
+          children: <Widget>[
+            TextButton(
+              onPressed: () => _addText('# '),
+              child: Text('#', style: TextStyle(fontSize: 20.0)),
+            ),
+            TextButton(
+              onPressed: () => _addText('* '),
+              child: Text('*', style: TextStyle(fontSize: 24.0)),
+            ),
+            TextButton(
+              onPressed: () => _addText(': '),
+              child: Text(':',
+                  style:
+                      TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+            ),
+            TextButton(
+              onPressed: () => _addText('+ '),
+              child: Text('+', style: TextStyle(fontSize: 20.0)),
+            ),
+            TextButton(
+              onPressed: () => _addText('r '),
+              child: Text('r', style: TextStyle(fontSize: 20.0)),
+            ),
+            TextButton(
+              onPressed: () => _addText('s '),
+              child: Text('s', style: TextStyle(fontSize: 20.0)),
+            ),
+            TextButton(
+              onPressed: () => _formatText(),
+              child: Icon(Icons.photo_filter),
+            ),
+          ],
+        ));
   }
 
   Widget textArea() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(15.0, 0.0, 50.0, 0.0),
+      padding: EdgeInsets.fromLTRB(15.0, 0.0, 65.0, 0.0),
       child: EditableText(
         autocorrect: true,
         autocorrectionTextRectColor: Colors.blue[100],
@@ -113,6 +116,7 @@ class _TraindownEditor extends State<TraindownEditor> {
         focusNode: FocusNode(),
         keyboardType: TextInputType.multiline,
         maxLines: null,
+        minLines: null,
         onChanged: (String text) => _handleTextChange(text),
         scrollController: widget.scrollController,
         style: Theme.of(context).textTheme.bodyText1,
@@ -124,6 +128,7 @@ class _TraindownEditor extends State<TraindownEditor> {
   Widget build(BuildContext context) {
     return Stack(
         alignment: AlignmentDirectional.bottomEnd,
+        fit: StackFit.expand,
         children: <Widget>[textArea(), buttonBar()]);
   }
 }
