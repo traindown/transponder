@@ -304,9 +304,6 @@ class _Transponder extends State<Transponder> {
         _sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
     Map<String, Set<String>> metadata = inspector.metadataByKey();
-
-    print(metadata);
-
     List<String> keys = metadata.keys.toList()..sort();
 
     showModalBottomSheet<void>(

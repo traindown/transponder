@@ -9,15 +9,15 @@ import 'note.dart';
 
 class TraindownViewer extends StatelessWidget {
   final String content;
-  Parser parser;
-  Session session;
+  final Parser parser;
   final ScrollController scrollController;
 
   TraindownViewer({Key key, this.content, this.scrollController})
-      : super(key: key) {
-    parser = Parser(content);
-    session = Session(parser.tokens());
-  }
+      : parser = Parser(content),
+        super(key: key);
+
+  // TODO: Consider changing this.
+  Session get session => Session(parser.tokens());
 
   List<Movement> get movements => session.movements;
 
