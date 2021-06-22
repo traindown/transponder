@@ -7,10 +7,8 @@ import 'package:traindown/traindown.dart';
 class TraindownEditor extends StatefulWidget {
   final String content;
   final ValueChanged<String> onChange;
-  final ScrollController scrollController;
 
-  TraindownEditor({Key key, this.content, this.onChange, this.scrollController})
-      : super(key: key);
+  TraindownEditor({Key key, this.content, this.onChange}) : super(key: key);
 
   @override
   _TraindownEditor createState() => _TraindownEditor();
@@ -101,7 +99,7 @@ class _TraindownEditor extends State<TraindownEditor> {
 
   Widget textArea() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(15.0, 0.0, 65.0, 0.0),
+      padding: EdgeInsets.fromLTRB(15.0, 25.0, 65.0, 0.0),
       child: EditableText(
         autocorrect: true,
         autocorrectionTextRectColor: Colors.blue[100],
@@ -118,7 +116,6 @@ class _TraindownEditor extends State<TraindownEditor> {
         maxLines: null,
         minLines: null,
         onChanged: (String text) => _handleTextChange(text),
-        scrollController: widget.scrollController,
         style: Theme.of(context).textTheme.bodyText1,
       ),
     );
