@@ -10,10 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:traindown/traindown.dart';
 
+import 'editor_modal.dart';
+import 'filters.dart';
 import 'session.dart';
 import 'session_list.dart';
-import 'settings.dart';
-import 'traindown_editor.dart';
+import 'settings_modal.dart';
 import 'traindown_viewer.dart';
 
 class _Transponder extends State<Transponder> {
@@ -144,6 +145,7 @@ class _Transponder extends State<Transponder> {
         _sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
 
+    // TODO: Fix lib conditional export...
     await _sendEmail(content: inspector.export());
   }
 
@@ -275,27 +277,10 @@ class _Transponder extends State<Transponder> {
   }
 
   void _showSessionEditor() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-            expand: true,
-            initialChildSize: 1,
-            minChildSize: 0.99,
-            builder: (_, controller) {
-              return Container(
-                  padding: EdgeInsets.only(top: 20.0),
-                  child: TraindownEditor(
-                      content: _activeSessionContent,
-                      onChange: _writeSession,
-                      scrollController: controller));
-            });
-      },
-    ).whenComplete(() => _syncFilenameToContent());
+    Navigator.of(context)
+        .push(EditorModal(
+            content: _activeSessionContent, onChange: _writeSession))
+        .then((_) => _syncFilenameToContent());
   }
 
   // TODO: Pull into own widget
@@ -303,89 +288,48 @@ class _Transponder extends State<Transponder> {
     List<Session> rawSessions =
         _sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
-    Map<String, Set<String>> metadata = inspector.metadataByKey();
-    List<String> keys = metadata.keys.toList()..sort();
 
     showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return DraggableScrollableSheet(
-              expand: true,
-              initialChildSize: 1,
-              minChildSize: 0.99,
-              builder: (_, controller) {
-                return Container(
-                    padding: EdgeInsets.only(top: 20.0),
-                    child: ListView.separated(
-                        controller: controller,
-                        separatorBuilder: (context, index) =>
-                            Divider(color: Colors.grey),
-                        itemCount: keys.length,
-                        itemBuilder: (context, index) {
-                          String key = keys[index];
-                          List<String> values = metadata[key].toList();
-                          values.sort((a, b) => a.compareTo(b));
-
-                          List<Widget> valueChecks = [];
-                          for (String value in values) {
-                            String filterString = '$key:$value';
-
-                            valueChecks.add(Column(children: [
-                              Checkbox(
-                                  value: _filterList.contains(filterString),
-                                  onChanged: (bool checkedValue) {
-                                    setState(() {
-                                      if (checkedValue) {
-                                        _filterList.add(filterString);
-                                      } else {
-                                        _filterList.remove(filterString);
-                                      }
-                                    });
-                                  }),
-                              Text(value),
-                            ]));
-                          }
-
-                          return Column(children: [
-                            Row(children: [
-                              Container(
-                                  padding: EdgeInsets.only(left: 15.0),
-                                  child: Text.rich(TextSpan(
-                                      text: key,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline6)))
-                            ]),
-                            Wrap(spacing: 8.0, children: valueChecks)
-                          ]);
-                        }));
-              });
-        });
-      },
-    ).whenComplete(() => setState(() {}));
+        backgroundColor: Colors.transparent,
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return DraggableScrollableSheet(
+                initialChildSize: 0.85,
+                expand: true,
+                builder: (_, controller) {
+                  return Filters(
+                      controller: controller,
+                      filterList: _filterList,
+                      metadataByKey: inspector.metadataByKey(),
+                      onAdd: (String f) {
+                        setState(() {
+                          _filterList.add(f);
+                        });
+                      },
+                      onRemove: (String f) {
+                        setState(() {
+                          _filterList.remove(f);
+                        });
+                      });
+                });
+          });
+        }).whenComplete(() => setState(() {}));
   }
 
   void _showSessionViewer() {
     showModalBottomSheet<void>(
+      backgroundColor: Colors.transparent,
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
+            initialChildSize: 0.85,
             expand: true,
-            initialChildSize: 1,
-            minChildSize: 0.99,
             builder: (_, controller) {
               return Container(
-                  padding: EdgeInsets.only(top: 20.0),
                   child: TraindownViewer(
                       content: _activeSessionContent,
                       scrollController: controller));
@@ -395,26 +339,9 @@ class _Transponder extends State<Transponder> {
   }
 
   void _showSettings() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-            expand: true,
-            initialChildSize: 1,
-            minChildSize: 0.99,
-            builder: (_, controller) {
-              return Container(
-                  padding: EdgeInsets.only(top: 20.0),
-                  child: Settings(
-                      sharedPreferences: widget.sharedPreferences,
-                      exportCallback: _sendExportEmail));
-            });
-      },
-    );
+    Navigator.of(context).push(SettingsModal(
+        sharedPreferences: widget.sharedPreferences,
+        onExport: _sendExportEmail));
   }
 
   void _syncFilenameToContent() {

@@ -167,28 +167,24 @@ class TraindownViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: ListView(
+            controller: scrollController,
+            shrinkWrap: true,
             children: <Widget>[
-          Expanded(
-              child: ListView(
-                  primary: false,
-                  controller: scrollController,
-                  children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.only(bottom: 20.0),
-                            child: Text(occurred,
-                                style: Theme.of(context).textTheme.headline1,
-                                textAlign: TextAlign.center))
-                      ] +
-                      ([renderNotes(context, session.metadata.notes)] +
-                              [renderKvps(context, session.metadata.kvps)] +
-                              movements
-                                  .map((m) => renderMovement(context, m))
-                                  .toList())
-                          .where((Object o) => o != null)
-                          .toList()))
-        ]));
+                  Padding(
+                      padding: EdgeInsets.symmetric(vertical: 25.0),
+                      child: Text(occurred,
+                          style: Theme.of(context).textTheme.headline1,
+                          textAlign: TextAlign.center))
+                ] +
+                ([renderNotes(context, session.metadata.notes)] +
+                        [renderKvps(context, session.metadata.kvps)] +
+                        movements
+                            .map((m) => renderMovement(context, m))
+                            .toList())
+                    .where((Object o) => o != null)
+                    .toList()));
   }
 }
