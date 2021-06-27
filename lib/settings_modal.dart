@@ -7,8 +7,9 @@ import 'settings.dart';
 class SettingsModal extends ModalRoute<void> {
   final SharedPreferences sharedPreferences;
   final Function onExport;
+  final Function onSync;
 
-  SettingsModal({this.sharedPreferences, this.onExport});
+  SettingsModal({this.sharedPreferences, this.onExport, this.onSync});
 
   @override
   Color get barrierColor => Colors.black.withOpacity(0.5);
@@ -39,7 +40,9 @@ class SettingsModal extends ModalRoute<void> {
         child: SafeArea(
             child: Stack(children: [
           Settings(
-              sharedPreferences: sharedPreferences, exportCallback: onExport),
+              sharedPreferences: sharedPreferences,
+              exportCallback: onExport,
+              syncCallback: onSync),
           Positioned(right: 20, top: 20, child: CloseButton())
         ])));
   }

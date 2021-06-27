@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/scheduler.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'repo.dart';
 import 'transponder.dart';
 
 // TODO: Load these in via sharedPref.
@@ -16,6 +20,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPreferences =
       await SharedPreferences.getInstance();
+  Directory directory = await getApplicationDocumentsDirectory();
+  final Repo repo = Repo(directory.path);
+  await repo.start();
   runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -34,5 +41,7 @@ void main() async {
           headline3: TextStyle(fontSize: 20.0),
         ),
       ),
-      home: Scaffold(body: Transponder(sharedPreferences: sharedPreferences))));
+      home: Scaffold(
+          body:
+              Transponder(repo: repo, sharedPreferences: sharedPreferences))));
 }

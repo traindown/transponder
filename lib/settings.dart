@@ -9,8 +9,13 @@ import 'traindown_info.dart';
 class Settings extends StatefulWidget {
   final SharedPreferences sharedPreferences;
   final Function exportCallback;
+  final Function syncCallback;
 
-  Settings({Key key, @required this.sharedPreferences, this.exportCallback})
+  Settings(
+      {Key key,
+      @required this.sharedPreferences,
+      this.exportCallback,
+      this.syncCallback})
       : assert(sharedPreferences != null),
         super(key: key);
 
@@ -84,6 +89,8 @@ class SettingsState extends State<Settings> {
               OutlinedButton(
                   onPressed: widget.exportCallback,
                   child: Text('Export all data via email')),
+              OutlinedButton(
+                  onPressed: widget.syncCallback, child: Text('DEBUG Sync DB')),
             ],
           )),
     );

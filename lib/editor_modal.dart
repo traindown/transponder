@@ -37,7 +37,7 @@ class EditorModal extends ModalRoute<void> {
         child: SafeArea(
             child: Stack(children: [
           TraindownEditor(content: content, onChange: onChange),
-          Positioned(right: 20, top: 20, child: CloseButton())
+          Positioned(right: 22, top: 15, child: CloseButton())
         ])));
   }
 }

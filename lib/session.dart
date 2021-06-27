@@ -3,6 +3,84 @@ import 'package:intl/intl.dart';
 
 import 'package:traindown/traindown.dart';
 
+import 'repo.dart';
+
+class StoredSession {
+  int id = 0;
+  bool errored = false;
+  String traindown;
+
+  List<Movement> _movements;
+  Repo _repo;
+  Session _session;
+
+  StoredSession(this.traindown);
+  StoredSession.fromRepo({this.id, this.traindown, Repo repo}) : _repo = repo;
+  StoredSession.blank({String unit = 'lbs'}) {
+    StoredSession('@ $_defaultDateString\n# unit: $unit\n\n');
+  }
+
+  bool get isPersisted => id > 0;
+  Future<bool> save() async {
+    if (_repo == null) throw 'Must connect to repo first';
+    errored = false;
+
+    try {
+      if (isPersisted) {
+        return _repo.update(this);
+      } else {
+        return _repo.create(this);
+      }
+    } catch (_) {
+      errored = true;
+      return false;
+    }
+  }
+
+  Session get session {
+    if (_session == null) {
+      _updateSession();
+      _updateMovements();
+    }
+
+    return _session;
+  }
+
+  void updateTraindown(String td) {
+    traindown = td;
+    _updateSession();
+    _updateMovements();
+  }
+
+  String _defaultDateString() {
+    DateTime date = DateTime.now();
+    String month = date.month.toString().padLeft(2, '0');
+    String day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  void _updateMovements() {
+    try {
+      _movements = _session.movements;
+      errored = false;
+    } catch (_) {
+      errored = true;
+      _movements = [];
+    }
+  }
+
+  void _updateSession() {
+    Parser parser = Parser(traindown);
+
+    try {
+      _session = Session(parser.tokens());
+      errored = false;
+    } catch (_) {
+      errored = true;
+    }
+  }
+}
+
 class TTSession {
   File file;
   List<Movement> _movements;

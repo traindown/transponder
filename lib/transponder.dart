@@ -12,6 +12,7 @@ import 'package:traindown/traindown.dart';
 
 import 'editor_modal.dart';
 import 'filters.dart';
+import 'repo.dart';
 import 'session.dart';
 import 'session_list.dart';
 import 'settings_modal.dart';
@@ -77,10 +78,30 @@ class _Transponder extends State<Transponder> {
       _appData = directory;
       if (files.isNotEmpty) {
         files.forEach((file) {
-          if (file is File) {
+          if (file is File && file.path.endsWith('.traindown')) {
             _sessions.add(TTSession(file, empty: false));
           }
         });
+      }
+    });
+  }
+
+  void _initDb() async {
+    widget.repo.canMigrate('files to db').then((canMigrate) {
+      if (canMigrate) {
+        bool failed = false;
+
+        _sessions.forEach((session) {
+          widget.repo.upsertFileSession(session).then((bool result) {
+            print("${session.session.occurred}: $result");
+          });
+        });
+
+        if (!failed) {
+          widget.repo.markMigration('files to db');
+        }
+      } else {
+        print('Files already migrated to db.');
       }
     });
   }
@@ -341,7 +362,8 @@ class _Transponder extends State<Transponder> {
   void _showSettings() {
     Navigator.of(context).push(SettingsModal(
         sharedPreferences: widget.sharedPreferences,
-        onExport: _sendExportEmail));
+        onExport: _sendExportEmail,
+        onSync: _initDb));
   }
 
   void _syncFilenameToContent() {
@@ -415,9 +437,10 @@ class _Transponder extends State<Transponder> {
 }
 
 class Transponder extends StatefulWidget {
+  final Repo repo;
   final SharedPreferences sharedPreferences;
 
-  Transponder({Key key, @required this.sharedPreferences})
+  Transponder({Key key, @required this.repo, @required this.sharedPreferences})
       : assert(sharedPreferences != null),
         super(key: key);
 
