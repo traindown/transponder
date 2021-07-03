@@ -7,9 +7,9 @@ import 'settings.dart';
 class SettingsModal extends ModalRoute<void> {
   final SharedPreferences sharedPreferences;
   final Function onExport;
-  final Function onSync;
+  final Function onLogs;
 
-  SettingsModal({this.sharedPreferences, this.onExport, this.onSync});
+  SettingsModal({this.sharedPreferences, this.onExport, this.onLogs});
 
   @override
   Color get barrierColor => Colors.black.withOpacity(0.5);
@@ -42,7 +42,7 @@ class SettingsModal extends ModalRoute<void> {
           Settings(
               sharedPreferences: sharedPreferences,
               exportCallback: onExport,
-              syncCallback: onSync),
+              logsCallback: onLogs),
           Positioned(right: 20, top: 20, child: CloseButton())
         ])));
   }

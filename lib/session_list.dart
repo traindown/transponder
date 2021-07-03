@@ -1,18 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'session.dart';
+import 'stored_session.dart';
 import 'traindown_info.dart';
 
 enum SessionMenuOption { copy, delete, edit, email }
 
 class SessionList extends StatelessWidget {
-  final List<TTSession> sessions;
-  final ValueChanged<String> onCopy;
-  final ValueChanged<String> onDelete;
-  final ValueChanged<String> onEmail;
-  final ValueChanged<String> onEdit;
-  final ValueChanged<String> onView;
+  final List<StoredSession> sessions;
+  final ValueChanged<StoredSession> onCopy;
+  final ValueChanged<StoredSession> onDelete;
+  final ValueChanged<StoredSession> onEmail;
+  final ValueChanged<StoredSession> onEdit;
+  final ValueChanged<StoredSession> onView;
 
   SessionList(
       {Key key,
@@ -41,7 +41,7 @@ class SessionList extends StatelessWidget {
         child: ListView.builder(
             itemCount: sessions.length,
             itemBuilder: (context, index) {
-              TTSession session = sessions[index];
+              StoredSession session = sessions[index];
 
               return Card(
                   color: session.errored
@@ -49,13 +49,13 @@ class SessionList extends StatelessWidget {
                       : Theme.of(context).cardColor,
                   child: InkWell(
                       splashColor: Colors.blue.withAlpha(30),
-                      onTap: () => onView(session.filename),
+                      onTap: () => onView(session),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(15.0, 0, 15.0, 10.0),
                         child: Column(children: [
                           ListTile(
                             contentPadding: EdgeInsets.all(0.0),
-                            onTap: () => onView(session.filename),
+                            onTap: () => onView(session),
                             title: Text(session.name,
                                 style: Theme.of(context).textTheme.headline6),
                             trailing:
@@ -69,16 +69,16 @@ class SessionList extends StatelessWidget {
                                   onSelected: (SessionMenuOption action) {
                                     switch (action) {
                                       case SessionMenuOption.copy:
-                                        onCopy(session.filename);
+                                        onCopy(session);
                                         break;
                                       case SessionMenuOption.delete:
-                                        onDelete(session.filename);
+                                        onDelete(session);
                                         break;
                                       case SessionMenuOption.edit:
-                                        onEdit(session.filename);
+                                        onEdit(session);
                                         break;
                                       case SessionMenuOption.email:
-                                        onEmail(session.filename);
+                                        onEmail(session);
                                         break;
                                     }
                                   },
