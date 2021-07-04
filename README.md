@@ -2,6 +2,11 @@
 
 No subscriptions, no lock in, no fragile interfaces. Own your training data by using the Traindown Transponder to record your sessions with the Traindown markup language. Traindown is a language to help athletes express their training that is inspired by Markdown.
 
+## Store Links
+
+[Apple App Store](https://apps.apple.com/us/app/traindown-transponder/id1524558877)
+[Google Play Store](https://play.google.com/store/apps/details?id=com.greaterscott.transponder)
+
 ## Getting Started
 
 This is a Flutter project so here are a few resources to get you started if this is your first Flutter project:
