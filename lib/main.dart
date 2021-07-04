@@ -23,6 +23,8 @@ void main() async {
       await SharedPreferences.getInstance();
 
   Directory directory = await getApplicationDocumentsDirectory();
+  // NOTE: For local debugging:
+  //final Repo repo = Repo(directory.path, debug: true);
   final Repo repo = Repo(directory.path);
 
   await repo.start();
@@ -63,7 +65,9 @@ Future<void> _initAppData(Repo repo) async {
 
   if (canMigrate) {
     await _migrateFilesToDb(repo);
-    repo.markMigration(migrationName);
+    await repo.markMigration(migrationName);
+  } else {
+    await repo.tidy();
   }
 
   repo.log('Initialized', subject: 'Application');

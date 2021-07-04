@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'settings.dart';
+import 'filters.dart';
 
-class SettingsModal extends ModalRoute<void> {
-  final SharedPreferences sharedPreferences;
-  final Function onExport;
-  final Function onLogs;
+class FiltersModal extends ModalRoute<void> {
+  final Set<String> filterList;
+  final Map<String, Set<String>> metadataByKey;
+  final Function onAdd;
+  final Function onRemove;
 
-  SettingsModal({this.sharedPreferences, this.onExport, this.onLogs});
+  FiltersModal(
+      {this.filterList, this.metadataByKey, this.onAdd, this.onRemove});
 
   @override
   Color get barrierColor => Colors.black.withOpacity(0.5);
@@ -35,16 +37,26 @@ class SettingsModal extends ModalRoute<void> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return Material(
-        type: MaterialType.canvas,
-        child: SafeArea(
+    return Scaffold(
+        body: SafeArea(
             child: Stack(children: [
-          Settings(
-              sharedPreferences: sharedPreferences,
-              exportCallback: onExport,
-              logsCallback: onLogs),
-          Positioned(right: 20, top: 20, child: CloseButton())
-        ])));
+      Padding(
+          padding: EdgeInsets.only(bottom: 40.0),
+          child: Filters(
+              filterList: filterList,
+              metadataByKey: metadataByKey,
+              onAdd: onAdd,
+              onRemove: onRemove)),
+      Positioned.fill(
+          bottom: 0,
+          child: Align(
+              alignment: Alignment.bottomCenter,
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.maybePop(context);
+                  },
+                  child: Text('Apply Filters'))))
+    ])));
   }
 
   // TODO: DRY

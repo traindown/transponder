@@ -16,8 +16,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # TODO: Get latest onto Play
-# Android build: 11
-version: 2.0.0+2
+# Android build: 13
+version: 2.0.0+13
 
 environment:
   sdk: ">=2.7.0 <3.0.0"

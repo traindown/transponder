@@ -114,6 +114,9 @@ class StoredSession {
       return false;
     }
 
+    _updateSession();
+    _updateMovements();
+
     error = null;
 
     try {
@@ -126,12 +129,6 @@ class StoredSession {
       error = e;
       return false;
     }
-  }
-
-  void updateTraindown(String td) {
-    traindown = td;
-    _updateSession();
-    _updateMovements();
   }
 
   void _updateMovements() {

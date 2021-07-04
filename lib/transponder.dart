@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:traindown/traindown.dart';
 
 import 'editor_modal.dart';
-import 'filters.dart';
+import 'filters_modal.dart';
 import 'repo.dart';
 import 'session_list.dart';
 import 'settings_modal.dart';
@@ -164,10 +164,10 @@ class _Transponder extends State<Transponder> {
       sendResponse = error.toString();
     }
 
-    return showCupertinoDialog<void>(
+    return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
+          return AlertDialog(
             title: Text('Email Status'),
             content: Text(sendResponse),
             actions: <Widget>[
@@ -206,10 +206,10 @@ class _Transponder extends State<Transponder> {
   }
 
   Future<void> _showDeleteModal(StoredSession session) async {
-    return showCupertinoDialog<void>(
+    return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
+          return AlertDialog(
             title: Text('Delete ${session.name}?'),
             content: SingleChildScrollView(
               child: ListBody(
@@ -251,10 +251,10 @@ class _Transponder extends State<Transponder> {
   }
 
   Future<void> _showErrorModal(String message) async {
-    return showCupertinoDialog<void>(
+    return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
+          return AlertDialog(
               title: Text('An error occurred'),
               content: SingleChildScrollView(
                 child: ListBody(
@@ -283,7 +283,10 @@ class _Transponder extends State<Transponder> {
 
     Navigator.of(context)
         .push(EditorModal(
-            content: _activeSession.traindown, onChange: _writeSession))
+            content: _activeSession.traindown,
+            onChange: (String traindown) {
+              _activeSession.traindown = traindown;
+            }))
         .then((_) async {
       bool saved = await _activeSession.save();
 
@@ -292,11 +295,12 @@ class _Transponder extends State<Transponder> {
       if (saved) {
         setState(() => _activeSession = _activeSession);
       } else {
-        // TODO: User facing error.
         widget.repo.log(
             "Failed to save Session ${_activeSession.id}. Error: ${_activeSession.error}",
             type: 'error',
             subject: 'Session');
+        _showErrorModal(
+            'Failed to save session! Please go to Settings and send a crash report.');
       }
     });
   }
@@ -307,34 +311,19 @@ class _Transponder extends State<Transponder> {
         sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
 
-    showModalBottomSheet<void>(
-        backgroundColor: Colors.transparent,
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-            return DraggableScrollableSheet(
-                initialChildSize: 0.85,
-                expand: true,
-                builder: (_, controller) {
-                  return Filters(
-                      controller: controller,
-                      filterList: _filterList,
-                      metadataByKey: inspector.metadataByKey(),
-                      onAdd: (String f) {
-                        setState(() {
-                          _filterList.add(f);
-                        });
-                      },
-                      onRemove: (String f) {
-                        setState(() {
-                          _filterList.remove(f);
-                        });
-                      });
-                });
+    Navigator.of(context).push(FiltersModal(
+        filterList: _filterList,
+        metadataByKey: inspector.metadataByKey(),
+        onAdd: (String f) {
+          setState(() {
+            _filterList.add(f);
           });
-        }).whenComplete(() => setState(() {}));
+        },
+        onRemove: (String f) {
+          setState(() {
+            _filterList.remove(f);
+          });
+        }));
   }
 
   void _showSessionViewer() {
@@ -363,7 +352,7 @@ class _Transponder extends State<Transponder> {
         onLogs: _sendLogEmail));
   }
 
-  void _writeSession(String content) => _activeSession.updateTraindown(content);
+  // void _writeSession(String content) => _activeSession.updateTraindown(content);
 
   @override
   Widget build(BuildContext context) {

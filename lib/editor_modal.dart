@@ -24,7 +24,7 @@ class EditorModal extends ModalRoute<void> {
   bool get opaque => true;
 
   @override
-  Duration get transitionDuration => Duration(milliseconds: 100);
+  Duration get transitionDuration => Duration(milliseconds: 200);
 
   @override
   Widget buildPage(
@@ -32,12 +32,28 @@ class EditorModal extends ModalRoute<void> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return Material(
-        type: MaterialType.canvas,
-        child: SafeArea(
+    return Scaffold(
+        body: SafeArea(
             child: Stack(children: [
-          TraindownEditor(content: content, onChange: onChange),
-          Positioned(right: 22, top: 15, child: CloseButton())
-        ])));
+      TraindownEditor(content: content, onChange: onChange),
+      Positioned(right: 22, top: 15, child: CloseButton())
+    ])));
+  }
+
+  // TODO: DRY
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(0.0, 1.0),
+        end: Offset.zero,
+      ).animate(animation),
+      child: child,
+    );
   }
 }

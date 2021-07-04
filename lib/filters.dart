@@ -1,23 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Filters extends StatelessWidget {
-  final ScrollController controller;
+// TODO: Figure out how to not shadow parent state.
+
+class Filters extends StatefulWidget {
   final Set<String> filterList;
   final Map<String, Set<String>> metadataByKey;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
 
   Filters(
-      {Key key,
-      this.controller,
-      this.filterList,
-      this.metadataByKey,
-      this.onAdd,
-      this.onRemove})
+      {Key key, this.filterList, this.metadataByKey, this.onAdd, this.onRemove})
       : super(key: key);
 
-  List<String> get keys => metadataByKey.keys.toList()..sort();
+  @override
+  _Filters createState() => _Filters();
+}
+
+class _Filters extends State<Filters> {
+  List<String> get keys => widget.metadataByKey.keys.toList()..sort();
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +26,11 @@ class Filters extends StatelessWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         padding: EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 10.0),
         child: ListView.separated(
-            controller: controller,
             separatorBuilder: (context, index) => Divider(color: Colors.grey),
             itemCount: keys.length,
             itemBuilder: (context, index) {
               String key = keys[index];
-              List<String> values = metadataByKey[key].toList();
+              List<String> values = widget.metadataByKey[key].toList();
               values.sort((a, b) => a.compareTo(b));
 
               List<Widget> valueChecks = [];
@@ -39,12 +39,18 @@ class Filters extends StatelessWidget {
 
                 valueChecks.add(Column(children: [
                   Checkbox(
-                      value: filterList.contains(filterString),
+                      value: widget.filterList.contains(filterString),
                       onChanged: (bool checkedValue) {
                         if (checkedValue) {
-                          onAdd(filterString);
+                          setState(() {
+                            widget.filterList.add(filterString);
+                          });
+                          widget.onAdd(filterString);
                         } else {
-                          onRemove(filterString);
+                          setState(() {
+                            widget.filterList.remove(filterString);
+                          });
+                          widget.onRemove(filterString);
                         }
                       }),
                   Text(value),

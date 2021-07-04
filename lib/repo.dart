@@ -5,13 +5,14 @@ import 'package:traindown/traindown.dart';
 import 'stored_session.dart';
 
 class Repo {
+  final bool debug;
   final String path;
   final String filename;
 
   Database _database;
   bool started = false;
 
-  Repo(this.path, {this.filename = 'transponder.db'});
+  Repo(this.path, {this.debug = false, this.filename = 'transponder.db'});
 
   static const String logsTableName = "logs";
   static const String migrationsTableName = "migrations";
@@ -48,6 +49,11 @@ class Repo {
     );
   """;
 
+  String addSoftDeleteToSessions = """
+    alter table $sessionsTableName
+    add column deleted_at datetime;
+  """;
+
   Future<void> start() async {
     _database = await openDatabase("$path/$filename");
 
@@ -63,14 +69,15 @@ class Repo {
     started = true;
 
     await migrate(createSessions, 'create sessions table');
+    await migrate(addSoftDeleteToSessions, 'add sessions deleted_at');
   }
 
   Database get database => _database;
   String get databasePath => _database.path;
 
   Future<List<StoredSession>> allSessions() async {
-    List<Map> results =
-        await _database.query(sessionsTableName, columns: ['id', 'traindown']);
+    List<Map> results = await _database.query(sessionsTableName,
+        columns: ['id', 'traindown'], where: 'deleted_at is null');
 
     return results
         .map((r) => StoredSession.fromRepo(
@@ -110,8 +117,18 @@ class Repo {
   Future<bool> destroy(StoredSession session) async {
     if (!started) await start();
 
-    int maybeId = await _database
-        .delete(sessionsTableName, where: 'id = ?', whereArgs: [session.id]);
+    log("Deleting ${session.id}", subject: 'Session');
+
+    int maybeId = await _database.update(
+        sessionsTableName,
+        {
+          'deleted_at': DateTime.now().toString(),
+          'updated_at': DateTime.now().toString()
+        },
+        where: 'id = ?',
+        whereArgs: [session.id]);
+
+    log("Deleted ${session.id}: ${maybeId > 0}", subject: 'Session');
 
     return maybeId > 0;
   }
@@ -126,6 +143,8 @@ class Repo {
   Future<bool> log(String message,
       {String subject = 'Application', String type = 'info'}) async {
     if (!started) return false;
+
+    if (debug) print("[$type] $subject: $message");
 
     int maybeId = await _database.insert(
         logsTableName, {'type': type, 'subject': subject, 'message': message});
@@ -155,6 +174,19 @@ class Repo {
       await _database.execute(migrationStr);
       await markMigration(name);
       log("Migrated '$name'", subject: 'Repo');
+    }
+  }
+
+  // NOTE: This is temporary. We need to clean up any garbage that may have
+  // been left during the transition to db backed persistence.
+  Future<void> tidy() async {
+    String primaryIds = 'select min(id) from sessions group by occurred_at;';
+    var res = await _database.rawQuery(primaryIds);
+    var idsToKeep = res.map((resMap) => resMap.values.first);
+
+    for (StoredSession session in await allSessions()) {
+      if (idsToKeep.contains(session.id)) continue;
+      await session.destroy();
     }
   }
 
