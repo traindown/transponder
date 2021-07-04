@@ -5,6 +5,7 @@ No subscriptions, no lock in, no fragile interfaces. Own your training data by u
 ## Store Links
 
 [Apple App Store](https://apps.apple.com/us/app/traindown-transponder/id1524558877)
+
 [Google Play Store](https://play.google.com/store/apps/details?id=com.greaterscott.transponder)
 
 ## Getting Started
