@@ -57,9 +57,9 @@ class _TraindownEditor extends State<TraindownEditor> {
 
   Widget buttonBar() {
     return Positioned(
-        bottom: 0.0,
         left: 0.0,
-        right: 0.0,
+        right: 5.0,
+        top: 55.0,
         child: ButtonBar(
           overflowDirection: VerticalDirection.up,
           children: <Widget>[

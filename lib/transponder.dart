@@ -1,43 +1,71 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:traindown/traindown.dart';
 
 import 'editor_modal.dart';
-import 'filters.dart';
-import 'session.dart';
+import 'filters_modal.dart';
+import 'repo.dart';
 import 'session_list.dart';
 import 'settings_modal.dart';
+import 'stored_session.dart';
 import 'traindown_viewer.dart';
 
 class _Transponder extends State<Transponder> {
-  TTSession _activeSession;
-  Directory _appData;
-
+  StoredSession _activeSession;
   final Set<String> _filterList = <String>{};
-  final List<TTSession> _sessions = [];
+  List<StoredSession> _sessions = [];
 
-  String get _activeSessionContent {
-    try {
-      return _activeSession.file.readAsStringSync();
-    } catch (e) {
-      return '';
+  _Transponder(Repo repo) {
+    repo.allSessions().then((List<StoredSession> allSessions) {
+      setState(() => _sessions = allSessions);
+    });
+  }
+
+  // Getters
+
+  List<StoredSession> get sessions {
+    List<Session> validRawSessions = _sessions
+        .where((s) => s.session != null && !s.errored)
+        .map((s) => s.session)
+        .toList();
+
+    Map<String, String> filters = {};
+
+    for (String filterString in _filterList) {
+      List<String> kvp = filterString.split(':');
+      filters[kvp[0]] = kvp[1];
+    }
+
+    Inspector inspector = Inspector(validRawSessions);
+
+    List<Session> matchedSessions = inspector.sessionQuery(metaLike: filters);
+    List<StoredSession> result =
+        _sessions.where((s) => matchedSessions.contains(s.session)).toList();
+
+    result.sort((a, b) => b.occurred.compareTo(a.occurred));
+
+    return result;
+  }
+
+  // Public
+
+  void setPreference(String key, {int integerValue, String stringValue}) {
+    if (integerValue != null) {
+      widget.sharedPreferences.setInt(key, integerValue);
+    } else if (stringValue != null) {
+      widget.sharedPreferences.setString(key, stringValue);
     }
   }
 
-  // TODO: All this needs to be cleaned up!
-  Future<void> _copySession(String filename) async {
-    String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
-    File tmpFile = File(fullFilePath(tmpFilename));
-    String content = fetchSession(filename).file.readAsStringSync();
-    Parser parser = Parser(content);
+  // Private
+
+  Future<void> _copySession(StoredSession session) async {
+    Parser parser = Parser(session.traindown);
     List<Token> tokens = parser.tokens().map((Token token) {
       if (token.tokenType != TokenType.DateTime) return token;
 
@@ -45,55 +73,26 @@ class _Transponder extends State<Transponder> {
           TokenType.DateTime, DateFormat('yyyy-MM-dd').format(DateTime.now()));
     }).toList();
     Formatter formatter = Formatter();
-    tmpFile.writeAsStringSync(formatter.format(tokens));
-    TTSession session = TTSession(tmpFile, empty: false);
+    StoredSession copy = StoredSession(formatter.format(tokens), widget.repo);
+
     setState(() {
-      _sessions.add(session);
-      _activeSession = session;
+      _sessions.add(copy);
+      _activeSession = copy;
       _showSessionEditor();
     });
   }
 
   Future<void> _createSession() async {
-    String tmpFilename = DateTime.now().millisecondsSinceEpoch.toString();
-    TTSession session = TTSession(File(fullFilePath(tmpFilename)),
+    StoredSession newSession = StoredSession.blank(widget.repo,
         unit: widget.sharedPreferences.getString('defaultUnit'));
     setState(() {
-      _sessions.add(session);
-      _activeSession = session;
+      _sessions.add(newSession);
+      _activeSession = newSession;
       _showSessionEditor();
     });
   }
 
   Future<void> _filterSessions() async => _showSessionsFilters();
-
-  String fullFilePath(String filename) =>
-      '${_appData.path}/$filename.traindown';
-
-  Future<void> _initAppData() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    List<FileSystemEntity> files = directory.listSync();
-    setState(() {
-      _appData = directory;
-      if (files.isNotEmpty) {
-        files.forEach((file) {
-          if (file is File) {
-            _sessions.add(TTSession(file, empty: false));
-          }
-        });
-      }
-    });
-  }
-
-  File moveFile(File sourceFile, String newPath) {
-    try {
-      return sourceFile.renameSync(newPath);
-    } on FileSystemException catch (_) {
-      final newFile = sourceFile.copySync(newPath);
-      sourceFile.deleteSync();
-      return newFile;
-    }
-  }
 
   Widget _renderActionBar() {
     return Row(children: [
@@ -120,15 +119,16 @@ class _Transponder extends State<Transponder> {
   Widget _renderSessionList() {
     return SessionList(
         sessions: sessions,
-        onCopy: (filename) => _copySession(filename),
-        onDelete: (filename) => _showDeleteModal(filename),
-        onEmail: (filename) => _sendEmail(session: fetchSession(filename)),
-        onEdit: (filename) {
-          _activeSession = fetchSession(filename);
+        onCopy: (StoredSession session) => _copySession(session),
+        onDelete: (StoredSession session) => _showDeleteModal(session),
+        onEmail: (StoredSession session) =>
+            _sendEmail(body: session.traindown, subject: session.name),
+        onEdit: (StoredSession session) {
+          _activeSession = session;
           _showSessionEditor();
         },
-        onView: (filename) {
-          _activeSession = fetchSession(filename);
+        onView: (StoredSession session) {
+          _activeSession = session;
           _showSessionViewer();
         });
   }
@@ -140,38 +140,20 @@ class _Transponder extends State<Transponder> {
         onPressed: () => _showSettings());
   }
 
-  void _sendExportEmail() async {
-    List<Session> rawSessions =
-        _sessions.where((s) => !s.errored).map((s) => s.session).toList();
-    Inspector inspector = Inspector(rawSessions);
-
-    // TODO: Fix lib conditional export...
-    await _sendEmail(content: inspector.export());
-  }
-
-  Future<void> _sendEmail({String content, TTSession session}) async {
-    List<String> recipients =
-        widget.sharedPreferences.getString('sendToEmails') == null
-            ? []
-            : widget.sharedPreferences
-                .getString('sendToEmails')
-                .split(',')
-                .map((e) => e.trim())
-                .toList();
-    // TODO: Make more specific subject.
-    String subject = session != null ? session.name : 'Traindown Export';
-    final Email email = Platform.isIOS
-        ? Email(
-            body: session != null ? session.file.readAsStringSync() : content,
-            subject: subject,
-            recipients: recipients,
-            attachmentPaths: session != null ? [session.file.path] : [],
-          )
-        : Email(
-            body: session != null ? session.file.readAsStringSync() : content,
-            subject: subject,
-            recipients: recipients,
-          );
+  Future<void> _sendEmail(
+      {String body, String subject, List<String> recipients}) async {
+    recipients ??= widget.sharedPreferences.getString('sendToEmails') == null
+        ? []
+        : widget.sharedPreferences
+            .getString('sendToEmails')
+            .split(',')
+            .map((e) => e.trim())
+            .toList();
+    final Email email = Email(
+      body: body,
+      subject: subject,
+      recipients: recipients,
+    );
 
     String sendResponse;
 
@@ -182,10 +164,10 @@ class _Transponder extends State<Transponder> {
       sendResponse = error.toString();
     }
 
-    return showCupertinoDialog<void>(
+    return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
+          return AlertDialog(
             title: Text('Email Status'),
             content: Text(sendResponse),
             actions: <Widget>[
@@ -200,21 +182,34 @@ class _Transponder extends State<Transponder> {
         });
   }
 
-  void setPreference(String key, {int integerValue, String stringValue}) {
-    if (integerValue != null) {
-      widget.sharedPreferences.setInt(key, integerValue);
-    } else if (stringValue != null) {
-      widget.sharedPreferences.setString(key, stringValue);
-    }
+  void _sendExportEmail() async {
+    List<Session> rawSessions =
+        sessions.where((s) => !s.errored).map((s) => s.session).toList();
+    Inspector inspector = Inspector(rawSessions);
+
+    // TODO: Fix lib conditional export...
+    await _sendEmail(body: inspector.export(), subject: 'Traindown Export');
   }
 
-  Future<void> _showDeleteModal(String filename) async {
-    TTSession session = fetchSession(filename);
+  void _sendLogEmail() async {
+    List<Map> logs = await widget.repo.dumpLogs();
 
-    return showCupertinoDialog<void>(
+    var lines = logs
+        .map((log) {
+          return "${log['created_at']} [${log['type']}] ${log['subject']}: ${log['message']}";
+        })
+        .toList()
+        .reversed;
+
+    await _sendEmail(
+        body: lines.join('\r\n'), subject: '[Transponder] Crash report');
+  }
+
+  Future<void> _showDeleteModal(StoredSession session) async {
+    return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
+          return AlertDialog(
             title: Text('Delete ${session.name}?'),
             content: SingleChildScrollView(
               child: ListBody(
@@ -234,13 +229,16 @@ class _Transponder extends State<Transponder> {
               TextButton(
                 style: TextButton.styleFrom(
                     primary: Theme.of(context).accentColor),
-                onPressed: () {
-                  if (session.teardown()) {
-                    setState(() => _sessions.removeWhere((s) => s == session));
-                    Navigator.of(context).pop();
+                onPressed: () async {
+                  bool deleted = await session.destroy();
+                  Navigator.of(context).pop();
+
+                  if (deleted) {
+                    setState(() {
+                      _sessions.removeWhere((s) => s.id == session.id);
+                    });
                   } else {
-                    Navigator.of(context).pop();
-                    _showErrorModal('Could not delete session');
+                    _showErrorModal('Failed to delete session.');
                   }
                 },
                 child: Text('Delete',
@@ -249,14 +247,14 @@ class _Transponder extends State<Transponder> {
               ),
             ],
           );
-        }).whenComplete(() => setState(() {}));
+        });
   }
 
   Future<void> _showErrorModal(String message) async {
-    return showCupertinoDialog<void>(
+    return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
+          return AlertDialog(
               title: Text('An error occurred'),
               content: SingleChildScrollView(
                 child: ListBody(
@@ -277,46 +275,55 @@ class _Transponder extends State<Transponder> {
   }
 
   void _showSessionEditor() {
+    if (_activeSession.isPersisted) {
+      widget.repo.log("Editing ${_activeSession.id}", subject: 'Session');
+    } else {
+      widget.repo.log("Writing new", subject: 'Session');
+    }
+
     Navigator.of(context)
         .push(EditorModal(
-            content: _activeSessionContent, onChange: _writeSession))
-        .then((_) => _syncFilenameToContent());
+            content: _activeSession.traindown,
+            onChange: (String traindown) {
+              _activeSession.traindown = traindown;
+            }))
+        .then((_) async {
+      bool saved = await _activeSession.save();
+
+      widget.repo.log("Edited ${_activeSession.id}", subject: 'Session');
+
+      if (saved) {
+        setState(() => _activeSession = _activeSession);
+      } else {
+        widget.repo.log(
+            "Failed to save Session ${_activeSession.id}. Error: ${_activeSession.error}",
+            type: 'error',
+            subject: 'Session');
+        _showErrorModal(
+            'Failed to save session! Please go to Settings and send a crash report.');
+      }
+    });
   }
 
   // TODO: Pull into own widget
-  void _showSessionsFilters() {
+  void _showSessionsFilters() async {
     List<Session> rawSessions =
-        _sessions.where((s) => !s.errored).map((s) => s.session).toList();
+        sessions.where((s) => !s.errored).map((s) => s.session).toList();
     Inspector inspector = Inspector(rawSessions);
 
-    showModalBottomSheet<void>(
-        backgroundColor: Colors.transparent,
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-            return DraggableScrollableSheet(
-                initialChildSize: 0.85,
-                expand: true,
-                builder: (_, controller) {
-                  return Filters(
-                      controller: controller,
-                      filterList: _filterList,
-                      metadataByKey: inspector.metadataByKey(),
-                      onAdd: (String f) {
-                        setState(() {
-                          _filterList.add(f);
-                        });
-                      },
-                      onRemove: (String f) {
-                        setState(() {
-                          _filterList.remove(f);
-                        });
-                      });
-                });
+    Navigator.of(context).push(FiltersModal(
+        filterList: _filterList,
+        metadataByKey: inspector.metadataByKey(),
+        onAdd: (String f) {
+          setState(() {
+            _filterList.add(f);
           });
-        }).whenComplete(() => setState(() {}));
+        },
+        onRemove: (String f) {
+          setState(() {
+            _filterList.remove(f);
+          });
+        }));
   }
 
   void _showSessionViewer() {
@@ -331,7 +338,7 @@ class _Transponder extends State<Transponder> {
             builder: (_, controller) {
               return Container(
                   child: TraindownViewer(
-                      content: _activeSessionContent,
+                      content: _activeSession.traindown,
                       scrollController: controller));
             });
       },
@@ -341,64 +348,14 @@ class _Transponder extends State<Transponder> {
   void _showSettings() {
     Navigator.of(context).push(SettingsModal(
         sharedPreferences: widget.sharedPreferences,
-        onExport: _sendExportEmail));
+        onExport: _sendExportEmail,
+        onLogs: _sendLogEmail));
   }
 
-  void _syncFilenameToContent() {
-    String content = _activeSession.file.readAsStringSync();
-    String possibleFilename = content.split('\n').first.split('@').last.trim();
-
-    if (!_activeSession.filename.startsWith(possibleFilename)) {
-      int existingSessionsCount = _sessions.fold(0, (count, session) {
-        if (session.filename == '$possibleFilename.traindown') count++;
-        return count;
-      });
-
-      if (existingSessionsCount > 0) {
-        possibleFilename += '.$existingSessionsCount';
-      }
-
-      setState(() {
-        _activeSession.file =
-            moveFile(_activeSession.file, fullFilePath(possibleFilename));
-      });
-    }
-
-    // NOTE: This just kicks the getters for _activeSession
-    setState(() => _activeSession = _activeSession.refresh());
-  }
-
-  TTSession fetchSession(String filename) {
-    return _sessions.where((s) => s.filename == filename).first;
-  }
-
-  void _writeSession(String content) =>
-      _activeSession.file.writeAsString(content);
-
-  List<TTSession> get sessions {
-    List<Session> sessions = _sessions
-        .where((s) => s.session != null && !s.errored)
-        .map((s) => s.session)
-        .toList();
-    Inspector inspector = Inspector(sessions);
-
-    Map<String, String> filters = {};
-    _filterList.forEach((String filterString) {
-      List<String> kvp = filterString.split(':');
-      filters[kvp[0]] = kvp[1];
-    });
-
-    List<Session> matchedSessions = inspector.sessionQuery(metaLike: filters);
-    List<TTSession> result =
-        _sessions.where((s) => matchedSessions.contains(s.session)).toList();
-    result.sort((a, b) => b.filename.compareTo(a.filename));
-    return result;
-  }
+  // void _writeSession(String content) => _activeSession.updateTraindown(content);
 
   @override
   Widget build(BuildContext context) {
-    if (_appData == null) _initAppData();
-
     return Align(
         alignment: Alignment.topLeft,
         child: SafeArea(
@@ -415,12 +372,13 @@ class _Transponder extends State<Transponder> {
 }
 
 class Transponder extends StatefulWidget {
+  final Repo repo;
   final SharedPreferences sharedPreferences;
 
-  Transponder({Key key, @required this.sharedPreferences})
+  Transponder({Key key, @required this.repo, @required this.sharedPreferences})
       : assert(sharedPreferences != null),
         super(key: key);
 
   @override
-  _Transponder createState() => _Transponder();
+  _Transponder createState() => _Transponder(repo);
 }

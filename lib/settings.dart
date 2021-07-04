@@ -5,12 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'traindown_info.dart';
 
-// Create a Form widget.
 class Settings extends StatefulWidget {
   final SharedPreferences sharedPreferences;
   final Function exportCallback;
+  final Function logsCallback;
 
-  Settings({Key key, @required this.sharedPreferences, this.exportCallback})
+  Settings(
+      {Key key,
+      @required this.sharedPreferences,
+      this.exportCallback,
+      this.logsCallback})
       : assert(sharedPreferences != null),
         super(key: key);
 
@@ -84,6 +88,9 @@ class SettingsState extends State<Settings> {
               OutlinedButton(
                   onPressed: widget.exportCallback,
                   child: Text('Export all data via email')),
+              OutlinedButton(
+                  onPressed: widget.logsCallback,
+                  child: Text('Email crash logs'))
             ],
           )),
     );

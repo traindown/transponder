@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/scheduler.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'repo.dart';
+import 'stored_session.dart';
 import 'transponder.dart';
 
 // TODO: Load these in via sharedPref.
@@ -16,6 +21,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences sharedPreferences =
       await SharedPreferences.getInstance();
+
+  Directory directory = await getApplicationDocumentsDirectory();
+  // NOTE: For local debugging:
+  //final Repo repo = Repo(directory.path, debug: true);
+  final Repo repo = Repo(directory.path);
+
+  await repo.start();
+  repo.log('Started: ${repo.started}', subject: 'Repo');
+
+  await _initAppData(repo);
+
   runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -34,5 +50,48 @@ void main() async {
           headline3: TextStyle(fontSize: 20.0),
         ),
       ),
-      home: Scaffold(body: Transponder(sharedPreferences: sharedPreferences))));
+      home: Scaffold(
+          body:
+              Transponder(repo: repo, sharedPreferences: sharedPreferences))));
+}
+
+Future<void> _initAppData(Repo repo) async {
+  // TODO: Constants file
+  const migrationName = 'files to db';
+
+  repo.log('Initializing', subject: 'Application');
+
+  bool canMigrate = await repo.canMigrate(migrationName);
+
+  if (canMigrate) {
+    await _migrateFilesToDb(repo);
+    await repo.markMigration(migrationName);
+  } else {
+    await repo.tidy();
+  }
+
+  repo.log('Initialized', subject: 'Application');
+}
+
+Future<void> _migrateFilesToDb(Repo repo) async {
+  repo.log('Migrating legacy files', subject: 'Application');
+
+  int fileCount = 0;
+  int migratedFileCount = 0;
+
+  Directory directory = await getApplicationDocumentsDirectory();
+  List<FileSystemEntity> files = directory.listSync();
+
+  if (files.isNotEmpty) {
+    for (File file in files) {
+      if (file is File && file.path.endsWith('.traindown')) {
+        fileCount++;
+        bool result = await repo.upsertFileSession(file.readAsStringSync());
+        if (result) migratedFileCount++;
+      }
+    }
+  }
+
+  repo.log('${fileCount} legacy files', subject: 'Application');
+  repo.log('Migrated $migratedFileCount files', subject: 'Application');
 }
