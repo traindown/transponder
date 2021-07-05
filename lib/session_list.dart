@@ -32,7 +32,11 @@ class SessionList extends StatelessWidget {
               .textTheme
               .bodyText1
               .copyWith(color: Theme.of(context).accentColor)),
-      Text(label, style: TextStyle(color: Colors.grey))
+      Text(label,
+          style: Theme.of(context)
+              .textTheme
+              .overline
+              .copyWith(color: Theme.of(context).hintColor))
     ]));
   }
 
@@ -114,7 +118,7 @@ class SessionList extends StatelessWidget {
                             ]),
                           ),
                           Container(
-                              padding: EdgeInsets.only(bottom: 10.0),
+                              padding: EdgeInsets.only(bottom: 5.0),
                               child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: Wrap(children: [
@@ -127,13 +131,25 @@ class SessionList extends StatelessWidget {
                                                     .hintColor)),
                                   ]))),
                           Row(children: [
-                            metric(context, session.volumeString, 'volume'),
+                            metric(context, session.volumeString, 'VOLUME'),
                             metric(context, session.movements.length.toString(),
-                                'exercises'),
+                                'EXERCISES'),
                             metric(
-                                context, session.setCount.toString(), 'sets'),
+                                context,
+                                session.setCount.toStringAsFixed(
+                                    session.setCount.truncateToDouble() ==
+                                            session.setCount
+                                        ? 0
+                                        : 1),
+                                'SETS'),
                             metric(
-                                context, session.repCount.toString(), 'reps'),
+                                context,
+                                session.repCount.toStringAsFixed(
+                                    session.repCount.truncateToDouble() ==
+                                            session.repCount
+                                        ? 0
+                                        : 1),
+                                'REPS'),
                           ])
                         ]),
                       )));
