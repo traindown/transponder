@@ -41,15 +41,22 @@ class StoredSession {
   }
 
   String get liftsSentence {
-    if (lifts.length == 1) return lifts.first;
+    String sentence = "No lifts yet";
+
+    if (lifts.length == 1) sentence = lifts.first;
     if (lifts.length == 2) {
-      return '${lifts.first} and ${lifts.last}';
+      sentence = '${lifts.first} and ${lifts.last}';
     }
     if (lifts.length == 3) {
-      return '${lifts.sublist(0, lifts.length - 1).join(", ")}, and ${lifts.last}';
+      sentence =
+          '${lifts.sublist(0, lifts.length - 1).join(", ")}, and ${lifts.last}';
+    }
+    if (lifts.length > 3) {
+      sentence =
+          '${lifts.sublist(0, 3).join(", ")}, and ${lifts.length - 3} others';
     }
 
-    return '${lifts.sublist(0, 3).join(", ")}, and ${lifts.length - 3} others';
+    return "${sentence[0].toUpperCase()}${sentence.substring(1)}.";
   }
 
   List<Movement> get movements {
