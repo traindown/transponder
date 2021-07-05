@@ -8,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'repo.dart';
-import 'stored_session.dart';
 import 'transponder.dart';
 
 // TODO: Load these in via sharedPref.
@@ -92,6 +91,6 @@ Future<void> _migrateFilesToDb(Repo repo) async {
     }
   }
 
-  repo.log('${fileCount} legacy files', subject: 'Application');
+  repo.log('$fileCount legacy files', subject: 'Application');
   repo.log('Migrated $migratedFileCount files', subject: 'Application');
 }

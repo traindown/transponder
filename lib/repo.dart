@@ -222,9 +222,15 @@ class Repo {
     log('Upserting legacy file: $content', subject: 'File');
 
     Parser parser = Parser(content);
+    Session session;
 
-    // TODO: Error handling
-    Session session = Session(parser.tokens());
+    try {
+      // TODO: Error handling
+      session = Session(parser.tokens());
+    } catch (e) {
+      log('Failed to upsert: $e', subject: 'File', type: 'error');
+      return false;
+    }
 
     Formatter formatter = Formatter();
     String traindown = formatter.format(session.tokens);

@@ -192,7 +192,7 @@ class _Transponder extends State<Transponder> {
   }
 
   void _sendLogEmail() async {
-    List<Map> logs = await widget.repo.dumpLogs();
+    List<Map> logs = await widget.repo.dumpLogs(limit: 200);
 
     var lines = logs
         .map((log) {
@@ -202,7 +202,9 @@ class _Transponder extends State<Transponder> {
         .reversed;
 
     await _sendEmail(
-        body: lines.join('\r\n'), subject: '[Transponder] Crash report');
+        body: lines.join('\r\n'),
+        recipients: ['tyler@greaterscott.com'],
+        subject: '[Transponder] Crash report');
   }
 
   Future<void> _showDeleteModal(StoredSession session) async {
