@@ -79,7 +79,7 @@ class _Filters extends State<Filters> {
                 child: Text("# $key:",
                     style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.center)),
-            Wrap(children: valueChecks)
+            Wrap(spacing: 20.0, children: valueChecks)
           ]);
         });
   }

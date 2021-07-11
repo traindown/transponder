@@ -46,7 +46,7 @@ class FiltersModal extends ModalRoute<void> {
         body: SafeArea(
             child: Stack(children: [
       Padding(
-          padding: EdgeInsets.only(bottom: 40.0),
+          padding: EdgeInsets.only(bottom: 50.0),
           child: Filters(
             filterList: filterList,
             metadataByKey: metadataByKey,
