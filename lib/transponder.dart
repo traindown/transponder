@@ -117,7 +117,7 @@ class _Transponder extends State<Transponder> {
           onPressed: () => _filterSessions())
     ];
 
-    if (!_filterList.isEmpty) {
+    if (_filterList.isNotEmpty) {
       children.add(Padding(
           padding: EdgeInsets.only(bottom: 15.0, left: 15.0),
           child: Stack(children: [
@@ -136,7 +136,6 @@ class _Transponder extends State<Transponder> {
                     letterSpacing: 6))
           ])));
     }
-    ;
 
     return Stack(alignment: Alignment.center, children: children);
   }
@@ -344,6 +343,11 @@ class _Transponder extends State<Transponder> {
         onAdd: (String f) {
           setState(() {
             _filterList.add(f);
+          });
+        },
+        onClear: () {
+          setState(() {
+            _filterList.clear();
           });
         },
         onRemove: (String f) {

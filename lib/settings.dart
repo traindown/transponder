@@ -85,12 +85,24 @@ class SettingsState extends State<Settings> {
                 },
               ),
               TraindownInfo(),
-              OutlinedButton(
-                  onPressed: widget.exportCallback,
-                  child: Text('Export all data via email')),
-              OutlinedButton(
-                  onPressed: widget.logsCallback,
-                  child: Text('Email crash logs'))
+              Container(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: Column(children: [
+                    Text(
+                        "The button below will ready an email that contains your entire Session history."),
+                    ElevatedButton(
+                        onPressed: widget.exportCallback,
+                        child: Text('Export all data via email'))
+                  ])),
+              Container(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: Column(children: [
+                    Text(
+                        "Should you have any issues, please send me an email containing your logs using the button below."),
+                    ElevatedButton(
+                        onPressed: widget.logsCallback,
+                        child: Text('Email crash logs'))
+                  ])),
             ],
           )),
     );
