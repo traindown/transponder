@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:intl/intl.dart';
 
 import 'package:traindown/traindown.dart';
@@ -6,18 +5,18 @@ import 'package:traindown/traindown.dart';
 import 'repo.dart';
 
 class StoredSession {
-  int id = 0;
-  Error error;
-  String traindown;
+  int? id = 0;
+  Error? error;
+  String? traindown;
 
-  List<Movement> _movements;
-  Repo _repo;
-  Session _session;
+  List<Movement>? _movements;
+  Repo? _repo;
+  Session? _session;
 
   StoredSession(this.traindown, Repo repo) : _repo = repo;
-  StoredSession.fromRepo({this.id, this.traindown, Repo repo}) : _repo = repo;
-  factory StoredSession.blank(Repo repo, {String unit = 'lbs'}) {
-    if (unit == null) unit = 'lbs';
+  StoredSession.fromRepo({this.id, this.traindown, Repo? repo}) : _repo = repo;
+  factory StoredSession.blank(Repo repo, {String? unit = 'lbs'}) {
+    unit ??= 'lbs';
 
     return StoredSession('@ $defaultDateString\n# unit: $unit\n\n', repo);
   }
@@ -32,12 +31,12 @@ class StoredSession {
 
   bool get errored => error != null;
 
-  bool get isPersisted => id > 0;
+  bool get isPersisted => id! > 0;
 
   List<String> get lifts {
-    if (movements.isEmpty) return ['No lifts yet'];
+    if (movements!.isEmpty) return ['No lifts yet'];
 
-    return movements.map((m) => m.name).toList();
+    return movements!.map((m) => m.name).toList();
   }
 
   String get liftsSentence {
@@ -59,22 +58,22 @@ class StoredSession {
     return "${sentence[0].toUpperCase()}${sentence.substring(1)}.";
   }
 
-  List<Movement> get movements {
+  List<Movement>? get movements {
     if (_movements != null) return _movements;
 
     try {
-      _movements = session.movements;
+      _movements = session!.movements;
       return _movements;
     } catch (_) {
       return [];
     }
   }
 
-  String get name => DateFormat('E, LLLL d, y').format(session.occurred);
+  String get name => DateFormat('E, LLLL d, y').format(session!.occurred);
 
-  DateTime get occurred => session.occurred;
+  DateTime get occurred => session!.occurred;
 
-  Session get session {
+  Session? get session {
     if (_session == null) {
       _updateSession();
       _updateMovements();
@@ -84,18 +83,18 @@ class StoredSession {
   }
 
   double get repCount {
-    return movements.fold(0, (ms, m) {
+    return movements!.fold(0, (ms, m) {
       return ms + m.performances.fold(0, (ps, p) => ps + (p.sets * p.reps));
     });
   }
 
   double get setCount {
-    return movements.fold(0, (ms, m) {
+    return movements!.fold(0, (ms, m) {
       return ms + m.performances.fold(0, (ps, p) => ps + p.sets);
     });
   }
 
-  double get volume => movements.fold(0, (acc, cur) => acc + cur.volume);
+  double get volume => movements!.fold(0, (acc, cur) => acc + cur.volume);
 
   String get volumeString => NumberFormat.decimalPattern().format(volume);
 
@@ -108,9 +107,9 @@ class StoredSession {
     error = null;
 
     try {
-      return _repo.destroy(this);
+      return _repo!.destroy(this);
     } catch (e) {
-      error = e;
+      error = e as Error;
       return false;
     }
   }
@@ -128,33 +127,33 @@ class StoredSession {
 
     try {
       if (isPersisted) {
-        return _repo.update(this);
+        return _repo!.update(this);
       } else {
-        return _repo.create(this);
+        return _repo!.create(this);
       }
     } catch (e) {
-      error = e;
+      error = e as Error;
       return false;
     }
   }
 
   void _updateMovements() {
     try {
-      _movements = _session.movements;
+      _movements = _session!.movements;
     } catch (e) {
-      error = e;
+      error = e as Error;
       _movements = [];
     }
   }
 
   void _updateSession() {
-    Parser parser = Parser(traindown);
+    Parser parser = Parser(traindown!);
 
     try {
       _session = Session(parser.tokens());
       error = null;
     } catch (e) {
-      error = e;
+      error = e as Error;
     }
   }
 }

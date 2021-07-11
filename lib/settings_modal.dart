@@ -5,9 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'settings.dart';
 
 class SettingsModal extends ModalRoute<void> {
-  final SharedPreferences sharedPreferences;
-  final Function onExport;
-  final Function onLogs;
+  final SharedPreferences? sharedPreferences;
+  final Function? onExport;
+  final Function? onLogs;
 
   SettingsModal({this.sharedPreferences, this.onExport, this.onLogs});
 
@@ -18,7 +18,7 @@ class SettingsModal extends ModalRoute<void> {
   bool get barrierDismissible => false;
 
   @override
-  String get barrierLabel => null;
+  String? get barrierLabel => null;
 
   @override
   bool get maintainState => true;
@@ -40,7 +40,7 @@ class SettingsModal extends ModalRoute<void> {
         child: SafeArea(
             child: Stack(children: [
           Settings(
-              sharedPreferences: sharedPreferences,
+              sharedPreferences: sharedPreferences!,
               exportCallback: onExport,
               logsCallback: onLogs),
           Positioned(right: 20, top: 20, child: CloseButton())

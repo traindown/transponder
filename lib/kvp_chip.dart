@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class KvpChip extends StatelessWidget {
-  final String keyLabel;
-  final String valueLabel;
+  final String? keyLabel;
+  final String? valueLabel;
 
-  KvpChip({Key key, this.keyLabel, this.valueLabel});
+  KvpChip({Key? key, this.keyLabel, this.valueLabel});
 
   Widget chip() {
     return Chip(

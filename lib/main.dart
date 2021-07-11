@@ -11,9 +11,9 @@ import 'repo.dart';
 import 'transponder.dart';
 
 // TODO: Load these in via sharedPref.
-final Color accentColor = Colors.orangeAccent[400];
+final Color? accentColor = Colors.orangeAccent[400];
 final Brightness brightness =
-    SchedulerBinding.instance.window.platformBrightness;
+    SchedulerBinding.instance!.window.platformBrightness;
 final Color primaryColor = Colors.purple;
 
 void main() async {
@@ -38,13 +38,13 @@ void main() async {
         brightness: brightness,
         buttonColor: primaryColor,
         primaryColor: primaryColor,
-        primarySwatch: primaryColor,
+        primarySwatch: primaryColor as MaterialColor?,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         // Chips
         chipTheme: ChipThemeData.fromDefaults(
             labelStyle: TextStyle(fontWeight: FontWeight.normal),
             primaryColor: accentColor,
-            secondaryColor: accentColor),
+            secondaryColor: accentColor!),
         // TextButtons
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(primary: accentColor),
@@ -91,7 +91,7 @@ Future<void> _migrateFilesToDb(Repo repo) async {
   List<FileSystemEntity> files = directory.listSync();
 
   if (files.isNotEmpty) {
-    for (File file in files) {
+    for (File file in files as Iterable<File>) {
       if (file is File && file.path.endsWith('.traindown')) {
         fileCount++;
         bool result = await repo.upsertFileSession(file.readAsStringSync());

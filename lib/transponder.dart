@@ -16,7 +16,7 @@ import 'stored_session.dart';
 import 'traindown_viewer.dart';
 
 class _Transponder extends State<Transponder> {
-  StoredSession _activeSession;
+  StoredSession? _activeSession;
   final Set<String> _filterList = <String>{};
   List<StoredSession> _sessions = [];
 
@@ -30,8 +30,9 @@ class _Transponder extends State<Transponder> {
 
   List<StoredSession> get sessions {
     List<Session> validRawSessions = _sessions
-        .where((s) => s.session != null && !s.errored)
-        .map((s) => s.session)
+        .where((StoredSession s) => s.session != null && !s.errored)
+        .map((StoredSession s) => s.session)
+        .whereType<Session>()
         .toList();
 
     Map<String, String> filters = {};
@@ -40,6 +41,8 @@ class _Transponder extends State<Transponder> {
       List<String> kvp = filterString.split(':');
       filters[kvp[0]] = kvp[1];
     }
+
+    if (validRawSessions.isEmpty) return [];
 
     Inspector inspector = Inspector(validRawSessions);
 
@@ -54,7 +57,7 @@ class _Transponder extends State<Transponder> {
 
   // Public
 
-  void setPreference(String key, {int integerValue, String stringValue}) {
+  void setPreference(String key, {int? integerValue, String? stringValue}) {
     if (integerValue != null) {
       widget.sharedPreferences.setInt(key, integerValue);
     } else if (stringValue != null) {
@@ -65,7 +68,7 @@ class _Transponder extends State<Transponder> {
   // Private
 
   Future<void> _copySession(StoredSession session) async {
-    Parser parser = Parser(session.traindown);
+    Parser parser = Parser(session.traindown!);
     List<Token> tokens = parser.tokens().map((Token token) {
       if (token.tokenType != TokenType.DateTime) return token;
 
@@ -146,7 +149,7 @@ class _Transponder extends State<Transponder> {
         onCopy: (StoredSession session) => _copySession(session),
         onDelete: (StoredSession session) => _showDeleteModal(session),
         onEmail: (StoredSession session) =>
-            _sendEmail(body: session.traindown, subject: session.name),
+            _sendEmail(body: session.traindown!, subject: session.name),
         onEdit: (StoredSession session) {
           _activeSession = session;
           _showSessionEditor();
@@ -165,11 +168,13 @@ class _Transponder extends State<Transponder> {
   }
 
   Future<void> _sendEmail(
-      {String body, String subject, List<String> recipients}) async {
+      {required String body,
+      required String subject,
+      List<String>? recipients}) async {
     recipients ??= widget.sharedPreferences.getString('sendToEmails') == null
         ? []
         : widget.sharedPreferences
-            .getString('sendToEmails')
+            .getString('sendToEmails')!
             .split(',')
             .map((e) => e.trim())
             .toList();
@@ -207,8 +212,11 @@ class _Transponder extends State<Transponder> {
   }
 
   void _sendExportEmail() async {
-    List<Session> rawSessions =
-        sessions.where((s) => !s.errored).map((s) => s.session).toList();
+    List<Session> rawSessions = sessions
+        .where((s) => !s.errored)
+        .map((s) => s.session)
+        .whereType<Session>()
+        .toList();
     Inspector inspector = Inspector(rawSessions);
 
     // TODO: Fix lib conditional export...
@@ -301,28 +309,28 @@ class _Transponder extends State<Transponder> {
   }
 
   void _showSessionEditor() {
-    if (_activeSession.isPersisted) {
-      widget.repo.log("Editing ${_activeSession.id}", subject: 'Session');
+    if (_activeSession!.isPersisted) {
+      widget.repo.log("Editing ${_activeSession!.id}", subject: 'Session');
     } else {
       widget.repo.log("Writing new", subject: 'Session');
     }
 
     Navigator.of(context)
         .push(EditorModal(
-            content: _activeSession.traindown,
+            content: _activeSession!.traindown,
             onChange: (String traindown) {
-              _activeSession.traindown = traindown;
+              _activeSession!.traindown = traindown;
             }))
         .then((_) async {
-      bool saved = await _activeSession.save();
+      bool saved = await _activeSession!.save();
 
-      widget.repo.log("Edited ${_activeSession.id}", subject: 'Session');
+      widget.repo.log("Edited ${_activeSession!.id}", subject: 'Session');
 
       if (saved) {
         setState(() => _activeSession = _activeSession);
       } else {
         widget.repo.log(
-            "Failed to save Session ${_activeSession.id}. Error: ${_activeSession.error}",
+            "Failed to save Session ${_activeSession!.id}. Error: ${_activeSession!.error}",
             type: 'error',
             subject: 'Session');
         _showErrorModal(
@@ -333,8 +341,11 @@ class _Transponder extends State<Transponder> {
 
   // TODO: Pull into own widget
   void _showSessionsFilters() async {
-    List<Session> rawSessions =
-        sessions.where((s) => !s.errored).map((s) => s.session).toList();
+    List<Session> rawSessions = sessions
+        .where((s) => !s.errored)
+        .map((s) => s.session)
+        .whereType<Session>()
+        .toList();
     Inspector inspector = Inspector(rawSessions);
 
     Navigator.of(context).push(FiltersModal(
@@ -369,7 +380,7 @@ class _Transponder extends State<Transponder> {
             builder: (_, controller) {
               return Container(
                   child: TraindownViewer(
-                      content: _activeSession.traindown,
+                      content: _activeSession!.traindown!,
                       scrollController: controller));
             });
       },
@@ -406,9 +417,8 @@ class Transponder extends StatefulWidget {
   final Repo repo;
   final SharedPreferences sharedPreferences;
 
-  Transponder({Key key, @required this.repo, @required this.sharedPreferences})
-      : assert(sharedPreferences != null),
-        super(key: key);
+  Transponder({Key? key, required this.repo, required this.sharedPreferences})
+      : super(key: key);
 
   @override
   _Transponder createState() => _Transponder(repo);

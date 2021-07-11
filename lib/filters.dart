@@ -6,13 +6,13 @@ import 'traindown_info.dart';
 // TODO: Figure out how to not shadow parent state.
 
 class Filters extends StatefulWidget {
-  final Set<String> filterList;
-  final Map<String, Set<String>> metadataByKey;
-  final ValueChanged<String> onAdd;
-  final ValueChanged<String> onRemove;
+  final Set<String>? filterList;
+  final Map<String, Set<String>>? metadataByKey;
+  final ValueChanged<String>? onAdd;
+  final ValueChanged<String>? onRemove;
 
   Filters(
-      {Key key, this.filterList, this.metadataByKey, this.onAdd, this.onRemove})
+      {Key? key, this.filterList, this.metadataByKey, this.onAdd, this.onRemove})
       : super(key: key);
 
   @override
@@ -20,7 +20,7 @@ class Filters extends StatefulWidget {
 }
 
 class _Filters extends State<Filters> {
-  List<String> get keys => widget.metadataByKey.keys.toList()..sort();
+  List<String> get keys => widget.metadataByKey!.keys.toList()..sort();
 
   Widget _instructions() {
     return Container(
@@ -28,7 +28,7 @@ class _Filters extends State<Filters> {
             borderRadius: BorderRadius.circular(5.0),
             boxShadow: [
               BoxShadow(
-                  color: Colors.grey[300],
+                  color: Colors.grey[300]!,
                   offset: Offset(0, 2),
                   blurRadius: 5.0,
                   spreadRadius: 2.0)
@@ -47,7 +47,7 @@ class _Filters extends State<Filters> {
   }
 
   Widget _listView() {
-    if (widget.metadataByKey.isEmpty) {
+    if (widget.metadataByKey!.isEmpty) {
       return Column(children: [
         Container(
             padding: EdgeInsets.only(top: 100.0),
@@ -65,7 +65,7 @@ class _Filters extends State<Filters> {
         itemCount: keys.length,
         itemBuilder: (context, index) {
           String key = keys[index];
-          List<String> values = widget.metadataByKey[key].toList();
+          List<String> values = widget.metadataByKey![key]!.toList();
           values.sort((a, b) => a.compareTo(b));
 
           List<Widget> valueChecks = [];
@@ -87,18 +87,18 @@ class _Filters extends State<Filters> {
   Widget _renderCheck(String filterString, String value) {
     return Column(children: [
       Checkbox(
-          value: widget.filterList.contains(filterString),
-          onChanged: (bool checkedValue) {
-            if (checkedValue) {
+          value: widget.filterList!.contains(filterString),
+          onChanged: (bool? checkedValue) {
+            if (checkedValue!) {
               setState(() {
-                widget.filterList.add(filterString);
+                widget.filterList!.add(filterString);
               });
-              widget.onAdd(filterString);
+              widget.onAdd!(filterString);
             } else {
               setState(() {
-                widget.filterList.remove(filterString);
+                widget.filterList!.remove(filterString);
               });
-              widget.onRemove(filterString);
+              widget.onRemove!(filterString);
             }
           }),
       Text(value),

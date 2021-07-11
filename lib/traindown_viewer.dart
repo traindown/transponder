@@ -10,9 +10,9 @@ import 'note.dart';
 class TraindownViewer extends StatelessWidget {
   final String content;
   final Parser parser;
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
 
-  TraindownViewer({Key key, this.content, this.scrollController})
+  TraindownViewer({Key? key, required this.content, this.scrollController})
       : parser = Parser(content),
         super(key: key);
 
@@ -23,8 +23,6 @@ class TraindownViewer extends StatelessWidget {
 
   Widget renderKvps(BuildContext context, Map<String, String> kvps,
       {leftPad = 15.0}) {
-    if (kvps.isEmpty) return null;
-
     return Container(
         padding: EdgeInsets.fromLTRB(leftPad, 0.0, 0.0, 10.0),
         child: Align(
@@ -69,20 +67,18 @@ class TraindownViewer extends StatelessWidget {
                                 .format(movement.volume),
                             style: Theme.of(context)
                                 .textTheme
-                                .headline3
+                                .headline3!
                                 .copyWith(color: Theme.of(context).accentColor))
                       ]),
                   Divider(color: Colors.grey),
                   renderNotes(context, movement.metadata.notes, leftPad: 0.0),
                   renderKvps(context, movement.metadata.kvps, leftPad: 0.0),
                   renderPerformances(context, movement.performances),
-                ].where((Object o) => o != null).toList())));
+                ].whereType<Widget>().toList())));
   }
 
   Widget renderNotes(BuildContext context, List<String> notes,
       {leftPad = 15.0}) {
-    if (notes.isEmpty) return null;
-
     return Container(
         child: ListView.builder(
             primary: false,
@@ -116,7 +112,8 @@ class TraindownViewer extends StatelessWidget {
                     textAlign: TextAlign.left)),
           ]))
     ];
-    performances.forEach((p) {
+
+    for (Performance p in performances) {
       rows.add(Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         Expanded(
             child: Text.rich(
@@ -156,7 +153,7 @@ class TraindownViewer extends StatelessWidget {
       if (p.metadata.kvps.isNotEmpty) {
         rows.add(renderKvps(context, p.metadata.kvps, leftPad: 10.0));
       }
-    });
+    }
 
     return Column(children: rows);
   }
@@ -184,7 +181,7 @@ class TraindownViewer extends StatelessWidget {
                         movements
                             .map((m) => renderMovement(context, m))
                             .toList())
-                    .where((Object o) => o != null)
+                    .whereType<Widget>()
                     .toList()));
   }
 }

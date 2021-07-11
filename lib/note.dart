@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Note extends StatelessWidget {
-  final String text;
+  final String? text;
 
-  Note({Key key, this.text});
+  Note({Key? key, this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class Note extends StatelessWidget {
       Expanded(
           child: Padding(
               padding: EdgeInsets.only(left: 5.0),
-              child: Text(text, style: Theme.of(context).textTheme.bodyText1)))
+              child: Text(text!, style: Theme.of(context).textTheme.bodyText1)))
     ]);
   }
 }

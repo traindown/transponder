@@ -7,16 +7,15 @@ import 'traindown_info.dart';
 
 class Settings extends StatefulWidget {
   final SharedPreferences sharedPreferences;
-  final Function exportCallback;
-  final Function logsCallback;
+  final Function? exportCallback;
+  final Function? logsCallback;
 
   Settings(
-      {Key key,
-      @required this.sharedPreferences,
+      {Key? key,
+      required this.sharedPreferences,
       this.exportCallback,
       this.logsCallback})
-      : assert(sharedPreferences != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   SettingsState createState() {
@@ -30,7 +29,7 @@ class SettingsState extends State<Settings> {
     return Form(
       autovalidateMode: AutovalidateMode.always,
       onChanged: () {
-        Form.of(primaryFocus.context).save();
+        Form.of(primaryFocus!.context!)!.save();
       },
       child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 50.0, vertical: 5.0),
@@ -49,14 +48,14 @@ class SettingsState extends State<Settings> {
                 // TODO: Constantize the keys
                 initialValue:
                     widget.sharedPreferences.getString('defaultUnit') ?? 'lbs',
-                onSaved: (String value) {
+                onSaved: (String? value) {
                   if (value == null || value.isEmpty) {
                     value = 'lbs';
                   }
                   widget.sharedPreferences.setString('defaultUnit', value);
                 },
                 validator: (value) {
-                  if (value.isEmpty) {
+                  if (value!.isEmpty) {
                     return 'You need to specify a default unit like lbs or kgs';
                   }
                   return null;
@@ -69,7 +68,7 @@ class SettingsState extends State<Settings> {
                 ),
                 initialValue:
                     widget.sharedPreferences.getString('sendToEmails'),
-                onSaved: (String value) {
+                onSaved: (String? value) {
                   if (value == null || value.isEmpty) {
                     widget.sharedPreferences.remove('sendToEmails');
                   } else {
@@ -77,7 +76,7 @@ class SettingsState extends State<Settings> {
                   }
                 },
                 validator: (value) {
-                  if (value.isNotEmpty &&
+                  if (value!.isNotEmpty &&
                       (!value.contains('@') || !value.contains('.'))) {
                     return 'Please enter a valid email';
                   }
@@ -91,7 +90,7 @@ class SettingsState extends State<Settings> {
                     Text(
                         "The button below will ready an email that contains your entire Session history."),
                     ElevatedButton(
-                        onPressed: widget.exportCallback,
+                        onPressed: widget.exportCallback as void Function()?,
                         child: Text('Export all data via email'))
                   ])),
               Container(
@@ -100,7 +99,7 @@ class SettingsState extends State<Settings> {
                     Text(
                         "Should you have any issues, please send me an email containing your logs using the button below."),
                     ElevatedButton(
-                        onPressed: widget.logsCallback,
+                        onPressed: widget.logsCallback as void Function()?,
                         child: Text('Email crash logs'))
                   ])),
             ],

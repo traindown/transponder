@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'filters.dart';
 
 class FiltersModal extends ModalRoute<void> {
-  final Set<String> filterList;
-  final Map<String, Set<String>> metadataByKey;
-  final Function onAdd;
-  final Function onClear;
-  final Function onRemove;
+  final Set<String>? filterList;
+  final Map<String, Set<String>>? metadataByKey;
+  final Function? onAdd;
+  final Function? onClear;
+  final Function? onRemove;
 
   FiltersModal(
       {this.filterList,
@@ -23,7 +23,7 @@ class FiltersModal extends ModalRoute<void> {
   bool get barrierDismissible => false;
 
   @override
-  String get barrierLabel => null;
+  String? get barrierLabel => null;
 
   @override
   bool get maintainState => true;
@@ -34,7 +34,7 @@ class FiltersModal extends ModalRoute<void> {
   @override
   Duration get transitionDuration => Duration(milliseconds: 200);
 
-  bool get filterable => metadataByKey.isNotEmpty;
+  bool get filterable => metadataByKey!.isNotEmpty;
 
   @override
   Widget buildPage(
@@ -50,8 +50,8 @@ class FiltersModal extends ModalRoute<void> {
           child: Filters(
             filterList: filterList,
             metadataByKey: metadataByKey,
-            onAdd: onAdd,
-            onRemove: onRemove,
+            onAdd: onAdd as void Function(String)?,
+            onRemove: onRemove as void Function(String)?,
           )),
       Positioned.fill(
           bottom: 0,
@@ -63,7 +63,7 @@ class FiltersModal extends ModalRoute<void> {
                         padding: EdgeInsets.all(5.0),
                         child: TextButton(
                             onPressed: () {
-                              onClear();
+                              onClear!();
                               Navigator.maybePop(context);
                             },
                             child: Text(filterable ? 'Clear' : 'Close')))),

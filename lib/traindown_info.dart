@@ -11,7 +11,7 @@ class TraindownInfo extends StatelessWidget {
             borderRadius: BorderRadius.circular(5.0),
             boxShadow: [
               BoxShadow(
-                  color: Colors.grey[300],
+                  color: Colors.grey[300]!,
                   offset: Offset(0, 2),
                   blurRadius: 5.0,
                   spreadRadius: 2.0)

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'traindown_editor.dart';
 
 class EditorModal extends ModalRoute<void> {
-  String content;
-  ValueChanged<String> onChange;
+  String? content;
+  ValueChanged<String>? onChange;
 
   EditorModal({this.content, this.onChange});
 
@@ -15,7 +15,7 @@ class EditorModal extends ModalRoute<void> {
   bool get barrierDismissible => false;
 
   @override
-  String get barrierLabel => null;
+  String? get barrierLabel => null;
 
   @override
   bool get maintainState => true;

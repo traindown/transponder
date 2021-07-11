@@ -9,7 +9,7 @@ class Repo {
   final String path;
   final String filename;
 
-  Database _database;
+  Database? _database;
   bool started = false;
 
   Repo(this.path, {this.debug = false, this.filename = 'transponder.db'});
@@ -57,13 +57,13 @@ class Repo {
   Future<void> start() async {
     _database = await openDatabase("$path/$filename");
 
-    print("Database at: ${_database.path}");
+    print("Database at: ${_database!.path}");
 
-    await _database.execute(createLogs);
+    await _database!.execute(createLogs);
     log("Created database at $path/$filename", subject: "Repo");
     log("Created logs table", subject: "Repo");
 
-    await _database.execute(createMigrations);
+    await _database!.execute(createMigrations);
     log("Created migrations table", subject: "Repo");
 
     started = true;
@@ -72,11 +72,11 @@ class Repo {
     await migrate(addSoftDeleteToSessions, 'add sessions deleted_at');
   }
 
-  Database get database => _database;
-  String get databasePath => _database.path;
+  Database? get database => _database;
+  String get databasePath => _database!.path;
 
   Future<List<StoredSession>> allSessions() async {
-    List<Map> results = await _database.query(sessionsTableName,
+    List<Map> results = await _database!.query(sessionsTableName,
         columns: ['id', 'traindown'], where: 'deleted_at is null');
 
     return results
@@ -88,12 +88,12 @@ class Repo {
   Future<bool> create(StoredSession session) async {
     if (!started) await start();
 
-    Session rawSession = session.session;
+    Session rawSession = session.session!;
 
     Formatter formatter = Formatter();
     session.traindown = formatter.format(rawSession.tokens);
 
-    int maybeId = await _database.insert(sessionsTableName, {
+    int maybeId = await _database!.insert(sessionsTableName, {
       'occurred_at': rawSession.occurred.toString(),
       'traindown': session.traindown,
       'created_at': DateTime.now().toString()
@@ -108,7 +108,7 @@ class Repo {
   Future<bool> canMigrate(String migration) async {
     if (!started) await start();
 
-    List<Map> maps = await _database.query(migrationsTableName,
+    List<Map> maps = await _database!.query(migrationsTableName,
         columns: ['key'], where: 'key = ?', whereArgs: [migration]);
 
     return maps.isEmpty;
@@ -119,7 +119,7 @@ class Repo {
 
     log("Deleting ${session.id}", subject: 'Session');
 
-    int maybeId = await _database.update(
+    int maybeId = await _database!.update(
         sessionsTableName,
         {
           'deleted_at': DateTime.now().toString(),
@@ -136,8 +136,8 @@ class Repo {
   Future<List<Map>> dumpLogs({int limit = 50}) async {
     if (!started) await start();
 
-    return _database.query(logsTableName,
-        orderBy: 'created_at desc', limit: limit);
+    return _database!
+        .query(logsTableName, orderBy: 'created_at desc', limit: limit);
   }
 
   Future<bool> log(String message,
@@ -146,7 +146,7 @@ class Repo {
 
     if (debug) print("[$type] $subject: $message");
 
-    int maybeId = await _database.insert(
+    int maybeId = await _database!.insert(
         logsTableName, {'type': type, 'subject': subject, 'message': message});
 
     return maybeId > 0;
@@ -155,7 +155,7 @@ class Repo {
   Future<bool> markMigration(String migration) async {
     if (!started) await start();
 
-    int maybeId = await _database.insert(migrationsTableName,
+    int maybeId = await _database!.insert(migrationsTableName,
         {'key': migration, 'created_at': DateTime.now().toString()});
 
     return maybeId > 0;
@@ -164,14 +164,11 @@ class Repo {
   Future<void> migrate(String migrationStr, String name) async {
     if (!started) await start();
 
-    log("Migrating '$name'", subject: 'Repo');
-
     bool proceed = await canMigrate(name);
 
-    if (!proceed) {
-      log("Migration '$name' already ran", subject: 'Repo');
-    } else {
-      await _database.execute(migrationStr);
+    if (proceed) {
+      log("Migrating '$name'", subject: 'Repo');
+      await _database!.execute(migrationStr);
       await markMigration(name);
       log("Migrated '$name'", subject: 'Repo');
     }
@@ -181,11 +178,13 @@ class Repo {
   // been left during the transition to db backed persistence.
   Future<void> tidy() async {
     String primaryIds = 'select min(id) from sessions group by occurred_at;';
-    var res = await _database.rawQuery(primaryIds);
+    var res = await _database!.rawQuery(primaryIds);
     var idsToKeep = res.map((resMap) => resMap.values.first);
 
     for (StoredSession session in await allSessions()) {
       if (idsToKeep.contains(session.id)) continue;
+
+      log("Tidying ${session.id} for ${session.occurred}", subject: 'Session');
       await session.destroy();
     }
   }
@@ -195,12 +194,12 @@ class Repo {
 
     log("Updating ${session.id}", subject: 'Session');
 
-    Session rawSession = session.session;
+    Session rawSession = session.session!;
 
     Formatter formatter = Formatter();
     session.traindown = formatter.format(rawSession.tokens);
 
-    int maybeId = await _database.update(
+    int maybeId = await _database!.update(
         sessionsTableName,
         {
           'occurred_at': rawSession.occurred.toString(),
@@ -235,7 +234,7 @@ class Repo {
     Formatter formatter = Formatter();
     String traindown = formatter.format(session.tokens);
 
-    int maybeId = await _database.insert(sessionsTableName, {
+    int maybeId = await _database!.insert(sessionsTableName, {
       'occurred_at': session.occurred.toString(),
       'traindown': traindown,
       'created_at': DateTime.now().toString()

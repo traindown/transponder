@@ -5,17 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:traindown/traindown.dart';
 
 class TraindownEditor extends StatefulWidget {
-  final String content;
-  final ValueChanged<String> onChange;
+  final String? content;
+  final ValueChanged<String>? onChange;
 
-  TraindownEditor({Key key, this.content, this.onChange}) : super(key: key);
+  TraindownEditor({Key? key, this.content, this.onChange}) : super(key: key);
 
   @override
   _TraindownEditor createState() => _TraindownEditor();
 }
 
 class _TraindownEditor extends State<TraindownEditor> {
-  TextEditingController _controller;
+  late TextEditingController _controller;
   final Formatter formatter = Formatter();
 
   @override
@@ -37,7 +37,7 @@ class _TraindownEditor extends State<TraindownEditor> {
     _controller.value = _controller.value.copyWith(
         text: _controller.text.replaceRange(start, start, addition),
         selection: TextSelection.collapsed(offset: end));
-    widget.onChange(_controller.value.text);
+    widget.onChange!(_controller.value.text);
   }
 
   void _formatText() {
@@ -47,12 +47,12 @@ class _TraindownEditor extends State<TraindownEditor> {
     _controller.value = _controller.value.copyWith(
         text: text, selection: TextSelection.collapsed(offset: text.length));
 
-    widget.onChange(_controller.value.text);
+    widget.onChange!(_controller.value.text);
   }
 
   // TODO: Suggestions
   void _handleTextChange(String text) {
-    widget.onChange(text);
+    widget.onChange!(text);
   }
 
   Widget buttonBar() {
@@ -116,7 +116,7 @@ class _TraindownEditor extends State<TraindownEditor> {
         maxLines: null,
         minLines: null,
         onChanged: (String text) => _handleTextChange(text),
-        style: Theme.of(context).textTheme.bodyText1,
+        style: Theme.of(context).textTheme.bodyText1!,
       ),
     );
   }

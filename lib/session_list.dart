@@ -7,15 +7,15 @@ import 'traindown_info.dart';
 enum SessionMenuOption { copy, delete, edit, email }
 
 class SessionList extends StatelessWidget {
-  final List<StoredSession> sessions;
-  final ValueChanged<StoredSession> onCopy;
-  final ValueChanged<StoredSession> onDelete;
-  final ValueChanged<StoredSession> onEmail;
-  final ValueChanged<StoredSession> onEdit;
-  final ValueChanged<StoredSession> onView;
+  final List<StoredSession>? sessions;
+  final ValueChanged<StoredSession>? onCopy;
+  final ValueChanged<StoredSession>? onDelete;
+  final ValueChanged<StoredSession>? onEmail;
+  final ValueChanged<StoredSession>? onEdit;
+  final ValueChanged<StoredSession>? onView;
 
   SessionList(
-      {Key key,
+      {Key? key,
       this.sessions,
       this.onCopy,
       this.onDelete,
@@ -30,12 +30,12 @@ class SessionList extends StatelessWidget {
       Text(amount,
           style: Theme.of(context)
               .textTheme
-              .bodyText1
+              .bodyText1!
               .copyWith(color: Theme.of(context).accentColor)),
       Text(label,
           style: Theme.of(context)
               .textTheme
-              .overline
+              .overline!
               .copyWith(color: Theme.of(context).hintColor))
     ]));
   }
@@ -43,9 +43,9 @@ class SessionList extends StatelessWidget {
   Widget renderList(BuildContext context) {
     return Expanded(
         child: ListView.builder(
-            itemCount: sessions.length,
+            itemCount: sessions!.length,
             itemBuilder: (context, index) {
-              StoredSession session = sessions[index];
+              StoredSession session = sessions![index];
 
               return Card(
                   color: session.errored
@@ -53,13 +53,13 @@ class SessionList extends StatelessWidget {
                       : Theme.of(context).cardColor,
                   child: InkWell(
                       splashColor: Colors.blue.withAlpha(30),
-                      onTap: () => onView(session),
+                      onTap: () => onView!(session),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(15.0, 0, 15.0, 10.0),
                         child: Column(children: [
                           ListTile(
                             contentPadding: EdgeInsets.all(0.0),
-                            onTap: () => onView(session),
+                            onTap: () => onView!(session),
                             title: Text(session.name,
                                 style: Theme.of(context).textTheme.headline6),
                             trailing:
@@ -73,16 +73,16 @@ class SessionList extends StatelessWidget {
                                   onSelected: (SessionMenuOption action) {
                                     switch (action) {
                                       case SessionMenuOption.copy:
-                                        onCopy(session);
+                                        onCopy!(session);
                                         break;
                                       case SessionMenuOption.delete:
-                                        onDelete(session);
+                                        onDelete!(session);
                                         break;
                                       case SessionMenuOption.edit:
-                                        onEdit(session);
+                                        onEdit!(session);
                                         break;
                                       case SessionMenuOption.email:
-                                        onEmail(session);
+                                        onEmail!(session);
                                         break;
                                     }
                                   },
@@ -125,14 +125,14 @@ class SessionList extends StatelessWidget {
                                     Text(session.liftsSentence,
                                         style: Theme.of(context)
                                             .textTheme
-                                            .bodyText2
+                                            .bodyText2!
                                             .copyWith(
                                                 color: Theme.of(context)
                                                     .hintColor)),
                                   ]))),
                           Row(children: [
                             metric(context, session.volumeString, 'VOLUME'),
-                            metric(context, session.movements.length.toString(),
+                            metric(context, session.movements!.length.toString(),
                                 'EXERCISES'),
                             metric(
                                 context,
@@ -190,7 +190,7 @@ class SessionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (sessions.isEmpty) {
+    if (sessions!.isEmpty) {
       return renderSplash(context);
     } else {
       return renderList(context);
