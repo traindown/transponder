@@ -34,13 +34,22 @@ void main() async {
   runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: brightness,
-        primaryColor: primaryColor,
         accentColor: accentColor,
+        brightness: brightness,
+        buttonColor: primaryColor,
+        primaryColor: primaryColor,
+        primarySwatch: primaryColor,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // Chips
         chipTheme: ChipThemeData.fromDefaults(
             labelStyle: TextStyle(fontWeight: FontWeight.normal),
             primaryColor: accentColor,
             secondaryColor: accentColor),
+        // TextButtons
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(primary: accentColor),
+        ),
+        // Text
         textTheme: TextTheme(
           bodyText1: TextStyle(fontSize: 18.0, fontWeight: FontWeight.normal),
           caption: TextStyle(fontSize: 16.0),

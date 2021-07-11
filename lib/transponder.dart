@@ -110,10 +110,34 @@ class _Transponder extends State<Transponder> {
   }
 
   Widget _renderFilterSessionsButton() {
-    return IconButton(
-        color: Theme.of(context).primaryColor,
-        icon: Icon(Icons.filter_alt_outlined),
-        onPressed: () => _filterSessions());
+    List<Widget> children = [
+      IconButton(
+          color: Theme.of(context).primaryColor,
+          icon: Icon(Icons.filter_alt_outlined),
+          onPressed: () => _filterSessions())
+    ];
+
+    if (_filterList.isNotEmpty) {
+      children.add(Padding(
+          padding: EdgeInsets.only(bottom: 15.0, left: 15.0),
+          child: Stack(children: [
+            Container(
+                padding: EdgeInsets.all(2.0),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Theme.of(context).accentColor),
+                constraints: BoxConstraints(maxHeight: 12, maxWidth: 12)),
+            Text(_filterList.length.toString(),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 6))
+          ])));
+    }
+
+    return Stack(alignment: Alignment.center, children: children);
   }
 
   Widget _renderSessionList() {
@@ -319,6 +343,11 @@ class _Transponder extends State<Transponder> {
         onAdd: (String f) {
           setState(() {
             _filterList.add(f);
+          });
+        },
+        onClear: () {
+          setState(() {
+            _filterList.clear();
           });
         },
         onRemove: (String f) {

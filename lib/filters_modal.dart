@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'filters.dart';
 
 class FiltersModal extends ModalRoute<void> {
   final Set<String> filterList;
   final Map<String, Set<String>> metadataByKey;
   final Function onAdd;
+  final Function onClear;
   final Function onRemove;
 
   FiltersModal(
-      {this.filterList, this.metadataByKey, this.onAdd, this.onRemove});
+      {this.filterList,
+      this.metadataByKey,
+      this.onAdd,
+      this.onClear,
+      this.onRemove});
 
   @override
   Color get barrierColor => Colors.black.withOpacity(0.5);
@@ -31,6 +34,8 @@ class FiltersModal extends ModalRoute<void> {
   @override
   Duration get transitionDuration => Duration(milliseconds: 200);
 
+  bool get filterable => metadataByKey.isNotEmpty;
+
   @override
   Widget buildPage(
     BuildContext context,
@@ -43,19 +48,36 @@ class FiltersModal extends ModalRoute<void> {
       Padding(
           padding: EdgeInsets.only(bottom: 40.0),
           child: Filters(
-              filterList: filterList,
-              metadataByKey: metadataByKey,
-              onAdd: onAdd,
-              onRemove: onRemove)),
+            filterList: filterList,
+            metadataByKey: metadataByKey,
+            onAdd: onAdd,
+            onRemove: onRemove,
+          )),
       Positioned.fill(
           bottom: 0,
           child: Align(
               alignment: Alignment.bottomCenter,
-              child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.maybePop(context);
-                  },
-                  child: Text('Apply Filters'))))
+              child: Row(children: [
+                Expanded(
+                    child: Container(
+                        padding: EdgeInsets.all(5.0),
+                        child: TextButton(
+                            onPressed: () {
+                              onClear();
+                              Navigator.maybePop(context);
+                            },
+                            child: Text(filterable ? 'Clear' : 'Close')))),
+                Expanded(
+                    child: Container(
+                        padding: EdgeInsets.all(5.0),
+                        child: ElevatedButton(
+                            onPressed: (filterable)
+                                ? () {
+                                    Navigator.maybePop(context);
+                                  }
+                                : null,
+                            child: Text('Apply Filters'))))
+              ])))
     ])));
   }
 
