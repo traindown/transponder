@@ -381,6 +381,7 @@ class _Transponder extends State<Transponder> {
               return Container(
                   child: TraindownViewer(
                       content: _activeSession!.traindown!,
+                      onCopy: () => _copySession(_activeSession!),
                       scrollController: controller));
             });
       },
@@ -393,8 +394,6 @@ class _Transponder extends State<Transponder> {
         onExport: _sendExportEmail,
         onLogs: _sendLogEmail));
   }
-
-  // void _writeSession(String content) => _activeSession.updateTraindown(content);
 
   @override
   Widget build(BuildContext context) {

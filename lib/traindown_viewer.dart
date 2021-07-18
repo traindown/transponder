@@ -9,10 +9,15 @@ import 'note.dart';
 
 class TraindownViewer extends StatelessWidget {
   final String content;
+  final Function onCopy;
   final Parser parser;
   final ScrollController? scrollController;
 
-  TraindownViewer({Key? key, required this.content, this.scrollController})
+  TraindownViewer(
+      {Key? key,
+      required this.content,
+      required this.scrollController,
+      required this.onCopy})
       : parser = Parser(content),
         super(key: key);
 
@@ -174,7 +179,12 @@ class TraindownViewer extends StatelessWidget {
                       padding: EdgeInsets.symmetric(vertical: 25.0),
                       child: Text(occurred,
                           style: Theme.of(context).textTheme.headline1,
-                          textAlign: TextAlign.center))
+                          textAlign: TextAlign.center)),
+                  Align(
+                      alignment: Alignment.center,
+                      child: ElevatedButton(
+                          onPressed: onCopy as void Function()?,
+                          child: Text('Copy to create new session')))
                 ] +
                 ([renderNotes(context, session.metadata.notes)] +
                         [renderKvps(context, session.metadata.kvps)] +
