@@ -91,7 +91,7 @@ Future<void> _migrateFilesToDb(Repo repo) async {
   List<FileSystemEntity> files = directory.listSync();
 
   if (files.isNotEmpty) {
-    for (File file in files as Iterable<File>) {
+    for (FileSystemEntity file in files) {
       if (file is File && file.path.endsWith('.traindown')) {
         fileCount++;
         bool result = await repo.upsertFileSession(file.readAsStringSync());
