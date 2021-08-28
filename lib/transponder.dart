@@ -382,6 +382,7 @@ class _Transponder extends State<Transponder> {
                   child: TraindownViewer(
                       content: _activeSession!.traindown!,
                       onCopy: () => _copySession(_activeSession!),
+                      onEdit: () => _showSessionEditor(),
                       scrollController: controller));
             });
       },
