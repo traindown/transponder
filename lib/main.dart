@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter/scheduler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -91,7 +90,7 @@ Future<void> _migrateFilesToDb(Repo repo) async {
   List<FileSystemEntity> files = directory.listSync();
 
   if (files.isNotEmpty) {
-    for (File file in files as Iterable<File>) {
+    for (FileSystemEntity file in files) {
       if (file is File && file.path.endsWith('.traindown')) {
         fileCount++;
         bool result = await repo.upsertFileSession(file.readAsStringSync());

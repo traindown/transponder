@@ -1,5 +1,7 @@
-import 'package:sqflite/sqflite.dart';
+import 'dart:io' show Platform;
 
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:traindown/traindown.dart';
 
 import 'stored_session.dart';
@@ -25,8 +27,8 @@ class Repo {
       message text not null,
       created_at datetime not null default(strftime('%Y-%m-%d %H:%M:%f', 'now'))
     );
-    create index log_type on $logsTableName(type);
-    create index log_created_at on $logsTableName(created_at);
+    create index if not exists log_type on $logsTableName(type);
+    create index if not exists log_created_at on $logsTableName(created_at);
   """;
 
   String createMigrations = """
@@ -55,6 +57,13 @@ class Repo {
   """;
 
   Future<void> start() async {
+    if (Platform.isWindows || Platform.isLinux) {
+      // Initialize FFI
+      sqfliteFfiInit();
+      // Change the default factory
+      databaseFactory = databaseFactoryFfi;
+    }
+
     _database = await openDatabase("$path/$filename");
 
     print("Database at: ${_database!.path}");
