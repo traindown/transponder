@@ -59,7 +59,7 @@ class _TraindownEditor extends State<TraindownEditor> {
     return Positioned(
         left: 0.0,
         right: 5.0,
-        top: 55.0,
+        top: 50.0,
         child: ButtonBar(
           overflowDirection: VerticalDirection.up,
           children: <Widget>[
@@ -89,12 +89,21 @@ class _TraindownEditor extends State<TraindownEditor> {
               onPressed: () => _addText('s '),
               child: Text('s', style: TextStyle(fontSize: 20.0)),
             ),
-            TextButton(
-              onPressed: () => _formatText(),
-              child: Icon(Icons.photo_filter),
-            ),
           ],
         ));
+  }
+
+  Widget numberBar() {
+    var newButton = (String numberStr) => (Expanded(
+            child: TextButton(
+          onPressed: () => _addText(numberStr),
+          child: Text(numberStr, style: TextStyle(fontSize: 20.0)),
+        )));
+
+    return Row(
+        children: Iterable<int>.generate(10)
+            .map((int i) => newButton("$i"))
+            .toList());
   }
 
   Widget textArea() {
@@ -121,11 +130,15 @@ class _TraindownEditor extends State<TraindownEditor> {
     );
   }
 
+  Widget mainColumn() {
+    return Column(children: [Expanded(child: textArea()), numberBar()]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
         alignment: AlignmentDirectional.bottomEnd,
         fit: StackFit.expand,
-        children: <Widget>[textArea(), buttonBar()]);
+        children: <Widget>[mainColumn(), buttonBar()]);
   }
 }

@@ -132,7 +132,9 @@ class SessionList extends StatelessWidget {
                                   ]))),
                           Row(children: [
                             metric(context, session.volumeString, 'VOLUME'),
-                            metric(context, session.movements!.length.toString(),
+                            metric(
+                                context,
+                                session.movements!.length.toString(),
                                 'EXERCISES'),
                             metric(
                                 context,
@@ -182,7 +184,7 @@ class SessionList extends StatelessWidget {
                                         color: Colors.grey, size: 18.0))),
                             TextSpan(
                                 text:
-                                    'button at the top of the screen to add a new session.')
+                                    'button at the bottom of the screen to add a new session.')
                           ])),
                   TraindownInfo()
                 ])));
