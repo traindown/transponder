@@ -5,27 +5,14 @@ import 'package:traindown/traindown.dart';
 
 import 'kvp_chip.dart';
 import 'note.dart';
+import 'stored_session.dart';
 
-class TraindownViewer extends StatelessWidget {
-  final String content;
-  final Function onCopy;
-  final Function onEdit;
-  final Parser parser;
-  final ScrollController? scrollController;
+class SessionViewer extends StatelessWidget {
+  final StoredSession session;
 
-  TraindownViewer(
-      {Key? key,
-      required this.content,
-      required this.scrollController,
-      required this.onCopy,
-      required this.onEdit})
-      : parser = Parser(content),
-        super(key: key);
+  SessionViewer({Key? key, required this.session}) : super(key: key);
 
-  // TODO: Consider changing this.
-  Session get session => Session(parser.tokens());
-
-  List<Movement> get movements => session.movements;
+  List<Movement> get movements => session.movements!;
 
   Widget renderKvps(BuildContext context, Map<String, String> kvps,
       {leftPad = 15.0}) {
@@ -173,7 +160,6 @@ class TraindownViewer extends StatelessWidget {
     return Container(
         color: Theme.of(context).scaffoldBackgroundColor,
         child: ListView(
-            controller: scrollController,
             shrinkWrap: true,
             children: <Widget>[
                   Padding(
@@ -183,15 +169,12 @@ class TraindownViewer extends StatelessWidget {
                           textAlign: TextAlign.center)),
                   ButtonBar(alignment: MainAxisAlignment.center, children: [
                     OutlinedButton(
-                        onPressed: onCopy as void Function()?,
-                        child: Text('Duplicate')),
-                    OutlinedButton(
-                        onPressed: onEdit as void Function()?,
-                        child: Text('Edit'))
+                        onPressed: () => {}, child: Text('Duplicate')),
+                    OutlinedButton(onPressed: () => {}, child: Text('Edit'))
                   ])
                 ] +
-                ([renderNotes(context, session.metadata.notes)] +
-                        [renderKvps(context, session.metadata.kvps)] +
+                ([renderNotes(context, session.session!.metadata.notes)] +
+                        [renderKvps(context, session.session!.metadata.kvps)] +
                         movements
                             .map((m) => renderMovement(context, m))
                             .toList())

@@ -1,16 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:split_view/split_view.dart';
 import 'package:traindown/traindown.dart';
 
 import 'editor_modal.dart';
 import 'filters_modal.dart';
 import 'repo.dart';
 import 'session_list.dart';
+import 'session_viewer.dart';
 import 'settings_modal.dart';
 import 'stored_session.dart';
 import 'traindown_viewer.dart';
@@ -391,13 +393,40 @@ class _Transponder extends State<Transponder> {
 
   void _showSettings() {
     Navigator.of(context).push(SettingsModal(
+        repo: widget.repo,
         sharedPreferences: widget.sharedPreferences,
         onExport: _sendExportEmail,
         onLogs: _sendLogEmail));
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _renderDesktop() {
+    return SplitView(viewMode: SplitViewMode.Horizontal, children: [
+      ListView.builder(
+          itemCount: _sessions.length,
+          itemBuilder: (context, index) {
+            StoredSession session = _sessions[index];
+
+            return InkWell(
+                splashColor: Colors.blue.withAlpha(30),
+                onTap: () => {
+                      setState(() {
+                        _activeSession = session;
+                      })
+                    },
+                child: Card(
+                    color: session.errored
+                        ? Colors.red
+                        : Theme.of(context).cardColor,
+                    child: Text(session.name,
+                        style: Theme.of(context).textTheme.headline6)));
+          }),
+      _activeSession != null
+          ? SessionViewer(session: _activeSession!)
+          : Text("Select a session")
+    ]);
+  }
+
+  Widget _renderMobile() {
     return Align(
         alignment: Alignment.topLeft,
         child: SafeArea(
@@ -410,6 +439,15 @@ class _Transponder extends State<Transponder> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[_renderSessionList(), _renderActionBar()])));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      return _renderDesktop();
+    } else {
+      return _renderMobile();
+    }
   }
 }
 

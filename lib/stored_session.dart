@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-
 import 'package:traindown/traindown.dart';
 
 import 'repo.dart';
@@ -19,6 +18,11 @@ class StoredSession {
     unit ??= 'lbs';
 
     return StoredSession('@ $defaultDateString\n# unit: $unit\n\n', repo);
+  }
+  StoredSession.fromSession({required Session session, required Repo repo}) {
+    traindown = Formatter().format(session.tokens);
+    _updateSession();
+    _updateMovements();
   }
 
   static String get defaultDateString {

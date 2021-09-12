@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'repo.dart';
 import 'settings.dart';
 
 class SettingsModal extends ModalRoute<void> {
-  final SharedPreferences? sharedPreferences;
-  final Function? onExport;
-  final Function? onLogs;
+  final Repo repo;
+  final SharedPreferences sharedPreferences;
+  final Function onExport;
+  final Function onLogs;
 
-  SettingsModal({this.sharedPreferences, this.onExport, this.onLogs});
+  // TODO: Assert non-null
+  SettingsModal(
+      {required this.repo,
+      required this.sharedPreferences,
+      required this.onExport,
+      required this.onLogs});
 
   @override
   Color get barrierColor => Colors.black.withOpacity(0.5);
@@ -40,7 +46,8 @@ class SettingsModal extends ModalRoute<void> {
         child: SafeArea(
             child: Stack(children: [
           Settings(
-              sharedPreferences: sharedPreferences!,
+              repo: repo,
+              sharedPreferences: sharedPreferences,
               exportCallback: onExport,
               logsCallback: onLogs),
           Positioned(right: 20, top: 20, child: CloseButton())

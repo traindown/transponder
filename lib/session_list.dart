@@ -31,7 +31,7 @@ class SessionList extends StatelessWidget {
           style: Theme.of(context)
               .textTheme
               .bodyText1!
-              .copyWith(color: Theme.of(context).accentColor)),
+              .copyWith(color: Theme.of(context).colorScheme.secondary)),
       Text(label,
           style: Theme.of(context)
               .textTheme
