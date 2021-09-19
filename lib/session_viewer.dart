@@ -157,10 +157,10 @@ class SessionViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: ListView(
-            shrinkWrap: true,
+    return SingleChildScrollView(
+        // NOTE: This is critical if used in SplitView
+        controller: ScrollController(),
+        child: Column(
             children: <Widget>[
                   Padding(
                       padding: EdgeInsets.symmetric(vertical: 25.0),

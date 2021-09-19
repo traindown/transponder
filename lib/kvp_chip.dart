@@ -9,13 +9,18 @@ class KvpChip extends StatelessWidget {
 
   Widget chip() {
     return Chip(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        labelPadding: EdgeInsets.all(0.0),
         label: Text.rich(TextSpan(
-      text: '$keyLabel: ',
-      children: <TextSpan>[
-        TextSpan(
-            text: valueLabel, style: TextStyle(fontWeight: FontWeight.normal)),
-      ],
-    )));
+          style: TextStyle(fontSize: 11.0),
+          text: '$keyLabel: ',
+          children: <TextSpan>[
+            TextSpan(
+                text: valueLabel,
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        )));
   }
 
   @override

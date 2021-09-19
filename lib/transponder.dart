@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:split_view/split_view.dart';
 import 'package:traindown/traindown.dart';
 
 import 'editor_modal.dart';
@@ -14,6 +13,7 @@ import 'repo.dart';
 import 'session_list.dart';
 import 'session_viewer.dart';
 import 'settings_modal.dart';
+import 'split_view.dart';
 import 'stored_session.dart';
 import 'traindown_viewer.dart';
 
@@ -400,29 +400,96 @@ class _Transponder extends State<Transponder> {
   }
 
   Widget _renderDesktop() {
-    return SplitView(viewMode: SplitViewMode.Horizontal, children: [
-      ListView.builder(
-          itemCount: _sessions.length,
-          itemBuilder: (context, index) {
-            StoredSession session = _sessions[index];
+    return Row(children: [
+      Container(
+          constraints: BoxConstraints(maxWidth: 120.0),
+          child: Row(children: [
+            Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              TextButton(
+                  child: Text("Sessions"), onPressed: () => _showSettings())
+            ]),
+            Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [_renderSettingsButton()])
+          ])),
+      Expanded(
+          child: SplitView(children: [
+        ListView.builder(
+            itemCount: _sessions.length,
+            itemBuilder: (context, index) {
+              StoredSession session = _sessions[index];
 
-            return InkWell(
-                splashColor: Colors.blue.withAlpha(30),
-                onTap: () => {
-                      setState(() {
-                        _activeSession = session;
-                      })
-                    },
-                child: Card(
-                    color: session.errored
-                        ? Colors.red
-                        : Theme.of(context).cardColor,
-                    child: Text(session.name,
-                        style: Theme.of(context).textTheme.headline6)));
-          }),
-      _activeSession != null
-          ? SessionViewer(session: _activeSession!)
-          : Text("Select a session")
+              return InkWell(
+                  onTap: () => {
+                        setState(() {
+                          if (_activeSession == session) {
+                            _activeSession = null;
+                          } else {
+                            _activeSession = session;
+                          }
+                        })
+                      },
+                  child: Card(
+                      color: session.errored
+                          ? Colors.red
+                          : _activeSession == session
+                              ? Theme.of(context).colorScheme.secondary
+                              : Theme.of(context).cardColor,
+                      child: Padding(
+                          padding: EdgeInsets.all(5.0),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(session.name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 5.0),
+                                Container(
+                                    child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Wrap(
+                                      spacing: 4.0,
+                                      runSpacing: -8.0,
+                                      children: session
+                                          .session!.metadata.kvps.keys
+                                          .map((k) => Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.grey[100],
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              5.0))),
+                                              padding: EdgeInsets.all(3.0),
+                                              child: Text.rich(TextSpan(
+                                                style:
+                                                    TextStyle(fontSize: 11.0),
+                                                text: '$k: ',
+                                                children: <TextSpan>[
+                                                  TextSpan(
+                                                      text: session.session!
+                                                          .metadata.kvps[k],
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ],
+                                              ))))
+                                          .toList()),
+                                )),
+                                SizedBox(height: 5.0),
+                                Text(session.liftsSentence,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(fontSize: 11.0))
+                              ]))));
+            }),
+        _activeSession != null
+            ? SessionViewer(session: _activeSession!)
+            : Text("Select a session")
+      ]))
     ]);
   }
 

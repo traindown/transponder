@@ -73,7 +73,7 @@ class StoredSession {
     }
   }
 
-  String get name => DateFormat('E, LLLL d, y').format(session!.occurred);
+  String get name => DateFormat('[E] d LLL y').format(session!.occurred);
 
   DateTime get occurred => session!.occurred;
 
