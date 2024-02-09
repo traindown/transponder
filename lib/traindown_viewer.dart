@@ -125,7 +125,7 @@ class TraindownViewer extends StatelessWidget {
         Expanded(
             child: Text.rich(
                 TextSpan(
-                  text: p.load.toString(),
+                  text: num.parse(p.load.toStringAsFixed(1)).toString(),
                   style: Theme.of(context).textTheme.bodyText1,
                   children: <TextSpan>[
                     TextSpan(
